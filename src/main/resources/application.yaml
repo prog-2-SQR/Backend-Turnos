@@ -1,3 +1,28 @@
+server:
+  # 8081 para poder correr junto al servicio de catálogo (8080).
+  port: ${SERVER_PORT:8081}
+
 spring:
   application:
     name: turnos
+  config:
+    # Lee el archivo .env de la raíz del proyecto si existe (en local).
+    # En otros entornos las mismas claves llegan como variables de entorno.
+    import: optional:file:.env[.properties]
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:turnos}
+    username: ${DB_USERNAME:turnos}
+    password: ${DB_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      # El esquema lo crea Liquibase; Hibernate solo verifica que coincida con las entidades.
+      ddl-auto: validate
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+management:
+  endpoint:
+    health:
+      # Muestra el estado de cada componente (db, disco...) sin exponer detalles internos.
+      show-components: always
