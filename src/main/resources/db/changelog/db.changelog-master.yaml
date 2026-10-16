@@ -1,0 +1,3 @@
+# Changelog maestro de Liquibase. Cada slice agrega su propio archivo en esta
+# carpeta y se incluye acá, en el orden en que deben aplicarse.
+databaseChangeLog: []
