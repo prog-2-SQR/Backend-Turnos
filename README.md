@@ -15,11 +15,12 @@ Gestiona los usuarios finales de la app (registro y login con JWT), calcula la d
 
 ## Estado
 
-Esqueleto inicial: proyecto Spring Boot que compila, arranca y expone el health check. La base de datos, los usuarios y las reservas se incorporan en las próximas issues (ver milestones del repositorio).
+Esqueleto con base de datos: proyecto Spring Boot conectado a su propio PostgreSQL, con migraciones Liquibase y health check. Los usuarios y las reservas se incorporan en las próximas issues (ver milestones del repositorio).
 
 ## Requisitos
 
 - **JDK 25**
+- **Docker** con Docker Compose (para la base de datos y para los tests)
 - **Git**
 
 No hace falta instalar Maven: el wrapper (`./mvnw`) descarga la versión correcta la primera vez.
@@ -30,21 +31,47 @@ No hace falta instalar Maven: el wrapper (`./mvnw`) descarga la versión correct
 git clone https://github.com/prog-2-SQR/Backend-Turnos.git
 cd Backend-Turnos
 
-# Compilar y correr los tests
-./mvnw verify
+# 1. Configuración local: copiar el ejemplo y poner una password propia en DB_PASSWORD
+cp .env.example .env
 
-# Levantar el servicio (puerto 8080)
+# 2. Levantar PostgreSQL (puerto 5433)
+docker compose up -d
+
+# 3. Levantar el servicio (puerto 8081)
 ./mvnw spring-boot:run
 ```
 
-Para comprobar que está vivo:
+La aplicación lee el archivo `.env` al arrancar. Liquibase aplica las migraciones automáticamente.
+
+Para comprobar que está vivo y conectado a la base:
 
 ```bash
-curl http://localhost:8080/actuator/health
-# {"groups":["liveness","readiness"],"status":"UP"}
+curl http://localhost:8081/actuator/health
+# {"components":{"db":{"status":"UP"}, ...},"status":"UP"}
 ```
 
+Para detener la base sin perder los datos: `docker compose down` (los datos quedan en el volumen `turnos-db-data`).
+
 En Windows, usar `mvnw.cmd` en lugar de `./mvnw`.
+
+## Tests
+
+```bash
+./mvnw verify
+```
+
+Los tests levantan su propio PostgreSQL descartable con **Testcontainers**: no necesitan el `.env` ni el compose, solo Docker funcionando.
+
+## Configuración
+
+| Variable | Por defecto | Descripción |
+|---|---|---|
+| `SERVER_PORT` | `8081` | Puerto HTTP del servicio (el catálogo usa 8080) |
+| `DB_HOST` | `localhost` | Host de PostgreSQL |
+| `DB_PORT` | `5433` | Puerto de PostgreSQL |
+| `DB_NAME` | `turnos` | Nombre de la base |
+| `DB_USERNAME` | `turnos` | Usuario |
+| `DB_PASSWORD` | (obligatoria) | Password. Sin valor por defecto: se define en `.env` |
 
 ## Stack
 
@@ -53,7 +80,14 @@ En Windows, usar `mvnw.cmd` en lugar de `./mvnw`.
 | Java | 25 |
 | Spring Boot | 4.1.1 |
 | Maven (wrapper) | 3.10.0 |
-| Dependencias | Spring Web MVC, Validation, Lombok, Actuator |
+| PostgreSQL | 18 |
+| Liquibase | gestionado por Spring Boot |
+| Dependencias | Spring Web MVC, Validation, Spring Data JPA, Lombok, Actuator |
+| Tests | JUnit 5, Testcontainers |
+
+## Decisiones de arquitectura
+
+- [ADR 0001: Motor de base de datos](docs/adr/0001-motor-de-base-de-datos.md)
 
 ## Repositorios del proyecto
 
