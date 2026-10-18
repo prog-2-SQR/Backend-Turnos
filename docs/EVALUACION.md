@@ -9,13 +9,13 @@
 
 | Aspecto | Resultado |
 |---|---|
-| Índice de calidad | **40/100** |
+| Índice de calidad | **48/100** |
 | Tipo de repositorio | `backend` |
 | Build (`mvnw verify` / `gradlew check`) | OK |
-| Código (LOC) | 18 |
-| Archivos de código | 2 |
-| Clases | 2 |
-| Código dentro de clases (%POO) | 56% |
+| Código (LOC) | 34 |
+| Archivos de código | 3 |
+| Clases | 3 |
+| Código dentro de clases (%POO) | 50% |
 | Funciones fuera de clases | 0 |
 | Duplicación | 0.0% |
 | Tope duro aplicado a D1 | `POO_BAJO` → D1 ≤ 60 |
@@ -47,23 +47,19 @@ Cada dimensión indica **qué mide**, **por qué importa** y **tu resultado**. C
 
 | Dimensión | Peso | Puntaje |
 |:--|--:|--:|
-| **D1** Diseño OO, SOLID y patrones (20%) | 20% | 58 |
+| **D1** Diseño OO, SOLID y patrones (20%) | 20% | 60 |
 | **D2** Arquitectura hexagonal — backend (15%) | 15% | 36 |
 | **D3** Frontend KMP: MVVM y buenas prácticas (10%) | 10% | N/A |
 | **D4** Integración y contrato (10%) | 10% | 0 |
-| **D5** Seguridad y robustez (10%) | 10% | 95 |
-| **D6** Pruebas y cobertura (20%) | 20% | 2 |
-| **D7** Proceso y entrega (15%) | 15% | 62 |
+| **D5** Seguridad y robustez (10%) | 10% | 100 |
+| **D6** Pruebas y cobertura (20%) | 20% | 5 |
+| **D7** Proceso y entrega (15%) | 15% | 100 |
 
 ### D1. Diseño OO, SOLID y patrones (20%)
 
 - **Qué mide:** Métricas orientadas a objetos (clases, métodos, campos, cohesión, acoplamiento, herencia) y proxies de SOLID, más patrones de diseño.
 - **Por qué importa:** El eje de la materia es el buen uso de la POO y su arquitectura: un diseño con clases claras y poco acopladas es más fácil de entender, probar y cambiar.
-- **Tu resultado:** **58/100**
-- **Para investigar la causa:**
-    - ¿Se pensó el modelo de clases antes de codificar o se agrupó después?
-    - ¿Qué clases concentran muchas responsabilidades a la vez?
-    - ¿Los colaboradores llegan como parámetros o se crean por dentro?
+- **Tu resultado:** **60/100**
 
 ### D2. Arquitectura hexagonal — backend (15%)
 
@@ -89,13 +85,13 @@ Cada dimensión indica **qué mide**, **por qué importa** y **tu resultado**. C
 
 - **Qué mide:** Credenciales embebidas, consultas SQL por concatenación, y presencia de config de entorno; aislamiento de secretos.
 - **Por qué importa:** Un secreto en el repositorio o una consulta construida por concatenación son riesgos concretos, no hipotéticos.
-- **Tu resultado:** **95/100**
+- **Tu resultado:** **100/100**
 
 ### D6. Pruebas y cobertura (20%)
 
 - **Qué mide:** Cantidad y resultado de pruebas y cobertura de línea (JaCoCo/Kover, Surefire/Failsafe) cuando hay build.
 - **Por qué importa:** Las pruebas son la red de seguridad para refactorizar e integrar; la cobertura acota las zonas sin verificar.
-- **Tu resultado:** **2/100**
+- **Tu resultado:** **5/100**
 - **Para investigar la causa:**
     - ¿Qué partes del sistema no tienen pruebas?
     - ¿Las pruebas cubren caminos de error o solo el caso feliz?
@@ -105,7 +101,7 @@ Cada dimensión indica **qué mide**, **por qué importa** y **tu resultado**. C
 
 - **Qué mide:** Artefactos verificables de proceso/entrega: `compose`, `.env.example`, CI (`.github/workflows/`), `CODEOWNERS` y wrapper de build (`mvnw`/`gradlew`). **No** puntúa documentación.
 - **Por qué importa:** Un proyecto que compila, se levanta y se valida solo es más fácil de revisar y de integrar en equipo.
-- **Tu resultado:** **62/100**
+- **Tu resultado:** **100/100**
 
 ## 5. Señales detectadas
 
@@ -118,14 +114,14 @@ El análisis encontró las siguientes señales (archivo, sin número de línea a
 
 ## 6. Evolución por commit
 
-Métricas calculadas sobre el estado de `main` en **cada commit** (3 commits con trabajo), del primero al último. La calidad usa el perfil `exigente`; el aporte de código lo mide RepoSense. El índice puede **bajar** al crecer el proyecto: se acumulan señales.
+Métricas calculadas sobre el estado de `main` en **cada commit** (4 commits con trabajo), del primero al último. La calidad usa el perfil `exigente`; el aporte de código lo mide RepoSense. El índice puede **bajar** al crecer el proyecto: se acumulan señales.
 
 ```mermaid
 xychart-beta
     title "Índice de calidad a lo largo de los commits"
-    x-axis ["eeef78f", "6974469", "2d32005"]
+    x-axis ["eeef78f", "6974469", "2d32005", "47745bf"]
     y-axis "Índice" 0 --> 100
-    line [0, 15, 40]
+    line [0, 15, 40, 48]
 ```
 
 | # | Fecha | Commit | Autor | LOC | Índice | %POO | Duplic. | Sueltas |
@@ -133,6 +129,7 @@ xychart-beta
 | 1 | 2026-09-10 | `eeef78f` | Ing. Daniel Quinteros | 0 | 0 | 0% | 0.0% | 0 |
 | 2 | 2026-09-10 | `6974469` | Ing. Daniel Quinteros | 0 | 15 | 0% | 0.0% | 0 |
 | 3 | 2026-10-16 | `2d32005` | Santiago Quiroga Rivarossa | 18 | 40 | 56% | 0.0% | 0 |
+| 4 | 2026-10-18 | `47745bf` | Santiago Quiroga Rivarossa | 34 | 48 | 50% | 0.0% | 0 |
 
 ---
 _Informe generado por la cátedra. Las dimensiones y umbrales corresponden a `calidad.py` (perfil `exigente`); el semáforo, a `CRITERIOS-CALIDAD.md`. La documentación del repositorio no se evalúa. Ante dudas, revisá el archivo señalado._
