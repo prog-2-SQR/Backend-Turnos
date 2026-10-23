@@ -31,7 +31,8 @@ No hace falta instalar Maven: el wrapper (`./mvnw`) descarga la versión correct
 git clone https://github.com/prog-2-SQR/Backend-Turnos.git
 cd Backend-Turnos
 
-# 1. Configuración local: copiar el ejemplo y poner una password propia en DB_PASSWORD
+# 1. Configuración local: copiar el ejemplo, poner una password propia en DB_PASSWORD
+#    y un secreto propio en JWT_BASE64_SECRET (openssl rand -base64 64)
 cp .env.example .env
 
 # 2. Levantar PostgreSQL (puerto 5433)
@@ -72,6 +73,9 @@ Los tests levantan su propio PostgreSQL descartable con **Testcontainers**: no n
 | `DB_NAME` | `turnos` | Nombre de la base |
 | `DB_USERNAME` | `turnos` | Usuario |
 | `DB_PASSWORD` | (obligatoria) | Password. Sin valor por defecto: se define en `.env` |
+| `JWT_BASE64_SECRET` | (obligatoria) | Secreto para firmar los JWT de los usuarios (HS512, Base64 de al menos 64 bytes). Generarlo con `openssl rand -base64 64 \| tr -d '\n'` |
+
+Los usuarios se registran con `POST /api/register` e inician sesión con `POST /api/authenticate`, que devuelve `{"id_token": "..."}` (contrato de JHipster). El resto de las APIs requiere `Authorization: Bearer <id_token>`; sin token responden `401`.
 
 ## Stack
 
