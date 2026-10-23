@@ -21,4 +21,8 @@ public final class ApiProblems {
         problem.setProperty(CODE, code);
         return problem;
     }
+
+    public static ProblemDetail badRequest(String code, String detail) {
+        return of(HttpStatus.BAD_REQUEST, code, detail);
+    }
 }
