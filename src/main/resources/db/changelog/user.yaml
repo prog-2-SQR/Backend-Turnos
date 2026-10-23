@@ -1,0 +1,106 @@
+# Tablas de usuarios con el mismo esquema que genera JHipster (jhi_user, jhi_authority, jhi_user_authority).
+databaseChangeLog:
+  - changeSet:
+      id: create-users
+      author: SantiQR-UM
+      changes:
+        - createTable:
+            tableName: jhi_user
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: login
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: ux_user_login
+              - column:
+                  name: password_hash
+                  type: varchar(60)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: first_name
+                  type: varchar(50)
+              - column:
+                  name: last_name
+                  type: varchar(50)
+              - column:
+                  name: email
+                  type: varchar(254)
+                  constraints:
+                    unique: true
+                    uniqueConstraintName: ux_user_email
+              - column:
+                  name: image_url
+                  type: varchar(256)
+              - column:
+                  name: activated
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: lang_key
+                  type: varchar(10)
+              - column:
+                  name: created_by
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_date
+                  type: timestamp with time zone
+              - column:
+                  name: last_modified_by
+                  type: varchar(50)
+              - column:
+                  name: last_modified_date
+                  type: timestamp with time zone
+        - createTable:
+            tableName: jhi_authority
+            columns:
+              - column:
+                  name: name
+                  type: varchar(50)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+        - createTable:
+            tableName: jhi_user_authority
+            columns:
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_user_authority_user
+                    references: jhi_user(id)
+              - column:
+                  name: authority_name
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_user_authority_authority
+                    references: jhi_authority(name)
+        - addPrimaryKey:
+            tableName: jhi_user_authority
+            columnNames: user_id, authority_name
+        - insert:
+            tableName: jhi_authority
+            columns:
+              - column:
+                  name: name
+                  value: ROLE_ADMIN
+        - insert:
+            tableName: jhi_authority
+            columns:
+              - column:
+                  name: name
+                  value: ROLE_USER
