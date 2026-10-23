@@ -20,6 +20,10 @@ spring:
       ddl-auto: validate
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
+  mvc:
+    problemdetails:
+      # Los errores HTTP salen como application/problem+json (RFC 9457), como pide el anexo §13.
+      enabled: true
 
 management:
   endpoint:
