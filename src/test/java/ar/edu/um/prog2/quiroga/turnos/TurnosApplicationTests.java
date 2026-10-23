@@ -5,7 +5,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
 @Import(TestcontainersConfiguration.class)
-@SpringBootTest
+@SpringBootTest(properties = "security.jwt.base64-secret=" + TestSecrets.JWT_SECRET)
 class TurnosApplicationTests {
 
 	@Test
