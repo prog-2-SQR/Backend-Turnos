@@ -1,5 +1,7 @@
 package ar.edu.um.prog2.quiroga.turnos.user.infrastructure.persistence.adapter;
 
+import java.util.Optional;
+
 import ar.edu.um.prog2.quiroga.turnos.user.domain.model.User;
 import ar.edu.um.prog2.quiroga.turnos.user.domain.ports.out.UserRepository;
 import ar.edu.um.prog2.quiroga.turnos.user.infrastructure.persistence.entity.UserEntity;
@@ -14,6 +16,12 @@ public class JpaUserRepositoryAdapter implements UserRepository {
 
     private final JpaUserRepository jpaUserRepository;
     private final UserMapper userMapper;
+
+    @Override
+    public Optional<User> findUserByLogin(String login) {
+        return jpaUserRepository.findOneByLogin(login)
+                .map(userMapper::toDomain);
+    }
 
     @Override
     public boolean existsUserByLogin(String login) {
