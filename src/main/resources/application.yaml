@@ -25,6 +25,12 @@ spring:
       # Los errores HTTP salen como application/problem+json (RFC 9457), como pide el anexo §13.
       enabled: true
 
+security:
+  jwt:
+    # Secreto propio para firmar los JWT de los usuarios de la app (HS512, mínimo 64 bytes en Base64).
+    # Sin valor por defecto: si falta, la app no arranca. Nunca se commitea.
+    base64-secret: ${JWT_BASE64_SECRET:}
+
 management:
   endpoint:
     health:
