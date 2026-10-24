@@ -1,8 +1,10 @@
 package ar.edu.um.prog2.quiroga.turnos.user.infrastructure.web.mapper;
 
+import static ar.edu.um.prog2.quiroga.turnos.user.support.UserFixtures.juan;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ar.edu.um.prog2.quiroga.turnos.user.domain.model.User;
+import ar.edu.um.prog2.quiroga.turnos.user.infrastructure.web.dto.AccountResponse;
 import ar.edu.um.prog2.quiroga.turnos.user.infrastructure.web.dto.RegisterUserRequest;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +33,19 @@ class UserDtoMapperTest {
     }
 
     @Test
+    void toAccountResponseExposesTheAccountButNotThePasswordHash() {
+        User user = juan();
+        user.setId(5L);
+
+        AccountResponse response = userDtoMapper.toAccountResponse(user);
+
+        assertThat(response).usingRecursiveComparison().isEqualTo(user);
+        assertThat(AccountResponse.class.getDeclaredFields()).extracting("name").doesNotContain("passwordHash", "password");
+    }
+
+    @Test
     void nullInputReturnsNull() {
         assertThat(userDtoMapper.toDomain(null)).isNull();
+        assertThat(userDtoMapper.toAccountResponse(null)).isNull();
     }
 }
