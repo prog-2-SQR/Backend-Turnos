@@ -66,10 +66,12 @@ class AuthenticationFlowTest {
         Jwt jwt = jwtDecoder.decode(token);
         assertThat(jwt.getSubject()).isEqualTo("juan.perez");
         assertThat(jwt.getClaimAsString("auth")).isEqualTo("ROLE_USER");
-        // Con token pasa la seguridad (404: todavía no hay endpoints protegidos); sin token, 401.
-        mockMvc.perform(get("/api/protegido").header("Authorization", "Bearer " + token))
-                .andExpect(status().isNotFound());
-        mockMvc.perform(get("/api/protegido"))
+        // Con el token se accede a la cuenta propia; sin token, 401.
+        mockMvc.perform(get("/api/account").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.login").value("juan.perez"))
+                .andExpect(jsonPath("$.email").value("juan.perez@example.com"));
+        mockMvc.perform(get("/api/account"))
                 .andExpect(status().isUnauthorized());
     }
 
