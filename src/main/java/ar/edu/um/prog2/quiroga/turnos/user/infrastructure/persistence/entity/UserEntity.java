@@ -35,7 +35,7 @@ public class UserEntity {
     private Long id;
     @Column(nullable = false, unique = true, length = 50)
     private String login;
-    @Column(name = "password_hash", nullable = false, length = 60)
+    @Column(name = "password_hash", nullable = false, length = 128)
     private String passwordHash;
     @Column(length = 50)
     private String firstName;

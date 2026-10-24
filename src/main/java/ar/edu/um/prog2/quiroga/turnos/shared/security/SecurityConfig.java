@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .build();
     }
 
-    // Login con usuario y contraseña: busca el usuario (UserDetailsService) y compara el hash BCrypt.
+    // Login con usuario y contraseña: busca el usuario (UserDetailsService) y compara el hash Argon2id.
     @Bean
     public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);

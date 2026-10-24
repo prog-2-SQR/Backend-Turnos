@@ -104,3 +104,13 @@ databaseChangeLog:
               - column:
                   name: name
                   value: ROLE_USER
+  # Argon2id (ADR 0002): el hash ocupa 97 caracteres y la columna de JHipster tenía 60 (BCrypt).
+  # changeSet nuevo: los ya aplicados no se modifican.
+  - changeSet:
+      id: widen-password-hash-for-argon2id
+      author: SantiQR-UM
+      changes:
+        - modifyDataType:
+            tableName: jhi_user
+            columnName: password_hash
+            newDataType: varchar(128)
