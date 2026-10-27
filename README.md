@@ -92,6 +92,7 @@ Los usuarios se registran con `POST /api/register` e inician sesión con `POST /
 ## Decisiones de arquitectura
 
 - [ADR 0001: Motor de base de datos](docs/adr/0001-motor-de-base-de-datos.md)
+- [ADR 0002: Hash de contraseñas con Argon2id](docs/adr/0002-hash-de-contrasenas-con-argon2id.md)
 
 ## Repositorios del proyecto
 

@@ -5,9 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+/** Adapter del puerto PasswordHasher sobre el PasswordEncoder de Spring: el algoritmo lo elige la configuración. */
 @Component
 @RequiredArgsConstructor
-public class BCryptPasswordHasher implements PasswordHasher {
+public class PasswordEncoderHasher implements PasswordHasher {
 
     private final PasswordEncoder passwordEncoder;
 

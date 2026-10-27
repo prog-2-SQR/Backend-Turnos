@@ -29,6 +29,7 @@
 	<properties>
 		<java.version>25</java.version>
 		<jacoco.version>0.8.15</jacoco.version>
+		<bouncycastle.version>1.86</bouncycastle.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -58,6 +59,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+		</dependency>
+		<dependency>
+			<!-- Implementación de Argon2 que usa el Argon2PasswordEncoder de Spring Security -->
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk18on</artifactId>
+			<version>${bouncycastle.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>

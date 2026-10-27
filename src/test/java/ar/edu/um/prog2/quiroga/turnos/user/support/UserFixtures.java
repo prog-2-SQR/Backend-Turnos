@@ -11,8 +11,9 @@ import ar.edu.um.prog2.quiroga.turnos.user.domain.model.User;
 public final class UserFixtures {
 
     public static final Instant CREATED = Instant.parse("2026-10-23T12:00:00Z");
-    // Hash BCrypt de ejemplo (60 caracteres), solo para que la columna tenga un valor con el largo real.
-    public static final String HASH = "$2a$10$7EqJtq98hPqEX7fNZaFWoOhi5BWX4Z3Z0kq0E9tq7Rl1Xc5u5gQ2W";
+    // Hash Argon2id real de "una-clave-segura" (97 caracteres), para que la columna tenga un valor con el largo real.
+    public static final String HASH =
+            "$argon2id$v=19$m=19456,t=2,p=1$PVwSMwbb7opoG9qZohUPRA$TeC6hHBe3NVOE5MDwSb5Hoz6FMrvsbXj8aVt9Idaoxw";
 
     private UserFixtures() {
     }

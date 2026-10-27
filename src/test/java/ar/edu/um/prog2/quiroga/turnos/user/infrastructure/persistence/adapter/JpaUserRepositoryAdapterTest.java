@@ -1,5 +1,6 @@
 package ar.edu.um.prog2.quiroga.turnos.user.infrastructure.persistence.adapter;
 
+import static ar.edu.um.prog2.quiroga.turnos.user.support.UserFixtures.HASH;
 import static ar.edu.um.prog2.quiroga.turnos.user.support.UserFixtures.juan;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -34,7 +35,8 @@ class JpaUserRepositoryAdapterTest {
 
         assertThat(saved.getId()).isNotNull();
         assertThat(saved.getAuthorities()).containsExactly(Authorities.USER);
-        assertThat(saved.getPasswordHash()).hasSize(60);
+        // Un hash Argon2id (97 caracteres) entra en la columna agrandada por la migración.
+        assertThat(saved.getPasswordHash()).isEqualTo(HASH).hasSize(97);
     }
 
     @Test
