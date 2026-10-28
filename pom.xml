@@ -28,6 +28,13 @@
 	</scm>
 	<properties>
 		<java.version>25</java.version>
+		<sonar-maven-plugin.version>5.8.0.7211</sonar-maven-plugin.version>
+		<!-- SonarQube Cloud: organización y proyecto. El token llega por la variable SONAR_TOKEN (secret del CI), nunca en el código. -->
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<sonar.organization>prog-2-sqr</sonar.organization>
+		<sonar.projectKey>prog-2-SQR_Backend-Turnos</sonar.projectKey>
+		<!-- Cobertura: el reporte XML que genera JaCoCo en ./mvnw verify. -->
+		<sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 		<jacoco.version>0.8.15</jacoco.version>
 		<bouncycastle.version>1.86</bouncycastle.version>
 		<wiremock.version>3.13.2</wiremock.version>
@@ -142,6 +149,12 @@
 
 	<build>
 		<plugins>
+			<!-- Análisis de SonarQube Cloud: ./mvnw sonar:sonar (lo corre el CI después de verify). -->
+			<plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>${sonar-maven-plugin.version}</version>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
