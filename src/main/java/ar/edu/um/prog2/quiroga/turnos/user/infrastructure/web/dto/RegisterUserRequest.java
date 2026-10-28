@@ -21,8 +21,11 @@ import lombok.Setter;
 @Builder
 public class RegisterUserRequest {
 
+    // Login de JHipster: un email o letras, números y _.@-. Las dos alternativas van agrupadas para que ^ y $ apliquen
+    // a las dos (en el original, ^A|B$ se lee (^A)|(B$)), y la repetición es posesiva (*+) para no acumular
+    // retrocesos con textos largos. Acepta exactamente los mismos logins que antes (LoginRegexTest).
     public static final String LOGIN_REGEX =
-            "^(?>[a-zA-Z0-9!$&*+=?^_`{|}~.-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*)|(?>[_.@A-Za-z0-9-]+)$";
+            "^(?:(?>[a-zA-Z0-9!$&*+=?^_`{|}~.-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*+)|(?>[_.@A-Za-z0-9-]+))$";
 
     @NotBlank
     @Size(min = 3, max = 50)
