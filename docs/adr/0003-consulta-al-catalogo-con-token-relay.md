@@ -2,7 +2,7 @@
 
 - **Estado:** aceptada
 - **Fecha:** 2026-10-28
-- **Issue:** #17
+- **Issue:** #18 (PR #17)
 - **Contrato:** [Documentacion/contratos/turnos-catalogo.md](https://github.com/prog-2-SQR/Documentacion/blob/main/contratos/turnos-catalogo.md)
 
 ## Contexto
