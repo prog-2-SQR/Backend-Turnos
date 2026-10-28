@@ -25,6 +25,20 @@ spring:
       # Los errores HTTP salen como application/problem+json (RFC 9457), como pide el anexo §13.
       enabled: true
 
+catedra:
+  # Servicio central de la cátedra (anexo §3): ocupaciones y, más adelante, holds. Valores reales en .env.
+  # Sin valor por defecto: si faltan, la validación de CatedraProperties frena el arranque.
+  api-url: ${CATEDRA_API_URL:}
+  jwt: ${CATEDRA_JWT:}
+
+catalogo:
+  # Servicio de catálogo del proyecto (Documentacion/contratos/turnos-catalogo.md): profesionales y horarios.
+  api-url: ${CATALOGO_API_URL:http://localhost:8080}
+
+turnos:
+  # Zona de las horas de atención (anexo §4: horas locales). Define qué turnos de hoy ya empezaron.
+  time-zone: ${TURNOS_TIME_ZONE:America/Argentina/Buenos_Aires}
+
 security:
   jwt:
     # Secreto propio para firmar los JWT de los usuarios de la app (HS512, mínimo 64 bytes en Base64).
