@@ -16,6 +16,9 @@ jobs:
     steps:
       - name: Descargar el código
         uses: actions/checkout@v7
+        with:
+          # Historia completa: SonarQube Cloud la usa para saber qué código es nuevo en cada PR.
+          fetch-depth: 0
 
       - name: Configurar Java 25
         uses: actions/setup-java@v6
@@ -26,3 +29,10 @@ jobs:
 
       - name: Compilar y ejecutar tests
         run: ./mvnw -B verify
+
+      # Usa lo compilado y el reporte de cobertura del paso anterior. El resultado (quality gate, bugs,
+      # vulnerabilidades, duplicación, cobertura) aparece en el PR y en sonarcloud.io.
+      - name: Analizar con SonarQube Cloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./mvnw -B sonar:sonar
