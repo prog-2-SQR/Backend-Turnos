@@ -48,10 +48,11 @@ public class WeeklySchedule {
         return slots;
     }
 
-    // Habilitada, del mismo día y con una duración que permita armar turnos.
+    // Habilitada, del mismo día y con una duración que permita armar turnos. DayOfWeek se compara con equals:
+    // la documentación de java.time lo declara "value-based" y desaconseja comparar por identidad (==).
     private boolean appliesTo(LocalDate date) {
         return Boolean.TRUE.equals(enabled)
-                && date.getDayOfWeek() == dayOfWeek
+                && date.getDayOfWeek().equals(dayOfWeek)
                 && slotDurationMinutes != null && slotDurationMinutes > 0;
     }
 
