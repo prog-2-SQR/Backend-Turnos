@@ -50,6 +50,11 @@ public class JpaReservationProcessRepositoryAdapter implements ReservationProces
                 .map(reservationProcessMapper::toDomain);
     }
 
+    @Override
+    public Optional<ReservationProcess> findReservationProcessByCatedraProcessId(String catedraProcessId) {
+        return jpaReservationProcessRepository.findByCatedraProcessId(catedraProcessId).map(reservationProcessMapper::toDomain);
+    }
+
     private static boolean isOnePendingPerUser(DataIntegrityViolationException e) {
         String message = e.getMostSpecificCause().getMessage();
         return message != null && message.contains(ONE_PENDING_PER_USER);

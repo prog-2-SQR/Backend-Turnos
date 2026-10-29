@@ -17,6 +17,8 @@ public class ReservationException extends RuntimeException {
     public static final String RESERVATION_PROCESS_ALREADY_CONFIRMED = "RESERVATION_PROCESS_ALREADY_CONFIRMED";
     public static final String CATEDRA_UNAVAILABLE = "CATEDRA_UNAVAILABLE";
     public static final String CATEDRA_REJECTED = "CATEDRA_REJECTED";
+    /** Un evento llegó antes de que guardáramos la confirmación del hold: el listener lo reintenta. */
+    public static final String CONFIRMATION_IN_FLIGHT = "CONFIRMATION_IN_FLIGHT";
 
     // Codes que llegan de la cátedra (anexo §13.1) o de la disponibilidad, y se pasan tal cual al cliente.
     public static final String INVALID_SLOT = "INVALID_SLOT";

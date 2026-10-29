@@ -1,18 +1,22 @@
 package ar.edu.um.prog2.quiroga.turnos.reservation.application.service;
 
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.mondayAtTwelveThirty;
+import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.phoneRequest;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.requested;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import ar.edu.um.prog2.quiroga.turnos.reservation.application.exception.ReservationException;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.PhoneRequest;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationProcess;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationRequest;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.GetReservationUseCase;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.HandlePhoneRequestUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.StartReservationUseCase;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +32,9 @@ class ReservationServiceTest {
 
     @Mock
     private GetReservationUseCase getReservationUseCase;
+
+    @Mock
+    private HandlePhoneRequestUseCase handlePhoneRequestUseCase;
 
     @InjectMocks
     private ReservationService reservationService;
@@ -57,5 +64,14 @@ class ReservationServiceTest {
         assertThatThrownBy(() -> reservationService.getReservation("juan.perez", id))
                 .isInstanceOf(ReservationException.class)
                 .extracting("code").isEqualTo(ReservationException.RESERVATION_NOT_FOUND);
+    }
+
+    @Test
+    void handlePhoneRequestDelegatesToItsUseCase() {
+        PhoneRequest request = phoneRequest();
+
+        reservationService.handlePhoneRequest(request);
+
+        verify(handlePhoneRequestUseCase).handlePhoneRequest(request);
     }
 }

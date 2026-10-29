@@ -38,6 +38,8 @@ public class ReservationProcess {
     private String catedraProcessId;
     private Instant expiresAt;
     private String failureCode;
+    private String phoneRequestEventId;
+    private String phoneRequestMessage;
     private Instant createdAt;
     private Instant updatedAt;
     private Long version;
@@ -78,6 +80,32 @@ public class ReservationProcess {
 
     public void expire(Instant now) {
         moveTo(ReservationStatus.EXPIRED, now);
+    }
+
+    /**
+     * La cátedra pidió el teléfono: se guarda el pedido y, si había un teléfono enviado (rechazado o pendiente de
+     * resultado), el proceso vuelve a esperarlo. El vencimiento lo marca la cátedra.
+     */
+    public void receivePhoneRequest(PhoneRequest request, Instant now) {
+        if (status != ReservationStatus.WAITING_FOR_PHONE) {
+            moveTo(ReservationStatus.WAITING_FOR_PHONE, now);
+        }
+        phoneRequestEventId = request.getEventId();
+        phoneRequestMessage = request.getMessage();
+        if (request.getExpiresAt() != null) {
+            expiresAt = request.getExpiresAt();
+        }
+        updatedAt = now;
+    }
+
+    /** Todavía no guardamos la confirmación del hold: un evento de la cátedra puede llegar antes que su respuesta. */
+    public boolean isConfirmationInFlight() {
+        return status == ReservationStatus.REQUESTED || status == ReservationStatus.HELD;
+    }
+
+    /** La app tiene que pedirle el teléfono al usuario. */
+    public boolean isPhoneRequested() {
+        return status == ReservationStatus.WAITING_FOR_PHONE && phoneRequestEventId != null;
     }
 
     public boolean isPending() {

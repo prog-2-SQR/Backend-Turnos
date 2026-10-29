@@ -14,6 +14,8 @@ class ReservationProcessMapperTest {
     void aRoundTripKeepsEveryField() {
         ReservationProcess process = held();
         process.setFailureCode("X");
+        process.setPhoneRequestEventId("request-event-8a31");
+        process.setPhoneRequestMessage("Ingrese un numero");
         process.setVersion(3L);
 
         ReservationProcess back = mapper.toDomain(mapper.toEntity(process));

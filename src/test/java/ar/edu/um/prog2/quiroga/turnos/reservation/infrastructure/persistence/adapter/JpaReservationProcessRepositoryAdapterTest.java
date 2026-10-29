@@ -81,6 +81,17 @@ class JpaReservationProcessRepositoryAdapterTest {
     }
 
     @Test
+    void findsTheProcessByTheIdOfTheCatedra() {
+        ReservationProcess process = adapter.saveReservationProcess(newRequest(42L));
+        process.hold(hold(), NOW);
+        adapter.saveReservationProcess(process);
+
+        assertThat(adapter.findReservationProcessByCatedraProcessId("process-a92b47d0")).get()
+                .extracting(ReservationProcess::getId).isEqualTo(process.getId());
+        assertThat(adapter.findReservationProcessByCatedraProcessId("process-otro")).isEmpty();
+    }
+
+    @Test
     void otherUsersCanHaveTheirOwnPendingProcess() {
         adapter.saveReservationProcess(newRequest(42L));
 

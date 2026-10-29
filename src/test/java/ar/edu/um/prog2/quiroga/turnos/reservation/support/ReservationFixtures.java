@@ -6,6 +6,7 @@ import java.time.LocalTime;
 
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.Hold;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.Patient;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.PhoneRequest;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationProcess;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationRequest;
 
@@ -34,6 +35,24 @@ public final class ReservationFixtures {
 
     public static ReservationProcess requested() {
         return ReservationProcess.request(juan(), mondayAtTwelveThirty(), NOW);
+    }
+
+    public static ReservationProcess waitingForPhone() {
+        ReservationProcess process = held();
+        process.waitForPhone(null, NOW);
+        return process;
+    }
+
+    // Ejemplo del anexo §15.4.
+    public static PhoneRequest phoneRequest() {
+        return PhoneRequest.builder()
+                .eventId("request-event-8a31")
+                .catedraProcessId("process-a92b47d0")
+                .holdId("hold-6c0c2f41")
+                .requiredField("PHONE_NUMBER")
+                .message("Ingrese un numero de telefono para continuar.")
+                .expiresAt(HOLD_EXPIRES_AT.plusSeconds(300))
+                .build();
     }
 
     public static ReservationProcess held() {
