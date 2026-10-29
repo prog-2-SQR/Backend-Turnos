@@ -8,6 +8,12 @@ on:
 permissions:
   contents: read
 
+# Los CI de una misma rama corren de a uno y en orden: así el último commit es también el último que analiza
+# SonarQube Cloud (con merges seguidos, un análisis viejo podía llegar después y pisar al nuevo).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     name: Build y tests
