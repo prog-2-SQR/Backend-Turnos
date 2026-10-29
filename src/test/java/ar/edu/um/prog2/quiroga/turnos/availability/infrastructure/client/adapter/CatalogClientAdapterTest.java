@@ -56,8 +56,7 @@ class CatalogClientAdapterTest {
                     "catedra.api-url=http://localhost:8090",
                     "catedra.jwt=jwt-de-prueba",
                     "catalogo.api-url=" + catalogo.baseUrl(),
-                    "catalogo.retry-delay=10ms",
-                    "catalogo.read-timeout=300ms");
+                    "catalogo.retry-delay=10ms");
 
     @AfterEach
     void clearSecurityContext() {
@@ -107,6 +106,14 @@ class CatalogClientAdapterTest {
     }
 
     @Test
+    void responseWithoutBodyMeansNoSchedules() {
+        // RestClient devuelve null cuando la respuesta no tiene cuerpo: el adapter lo trata como lista vacía.
+        catalogo.stubFor(get(urlEqualTo(SCHEDULES)).willReturn(aResponse().withStatus(200)));
+
+        contextRunner.run(context -> assertThat(context.getBean(CatalogClient.class).findWeeklySchedules(201L)).isEmpty());
+    }
+
+    @Test
     void catalogDownAfterTheRetriesIsCatalogUnavailable() {
         catalogo.stubFor(get(urlEqualTo(SCHEDULES)).willReturn(serviceUnavailable()));
 
@@ -121,7 +128,8 @@ class CatalogClientAdapterTest {
     void catalogTooSlowIsCatalogUnavailable() {
         catalogo.stubFor(get(PROFESSIONAL).willReturn(aResponse().withFixedDelay(1_000).withStatus(200)));
 
-        contextRunner.withPropertyValues("catalogo.max-retries=0")
+        // Timeout corto solo acá: en los demás tests, el primer pedido a WireMock recién levantado puede tardar más.
+        contextRunner.withPropertyValues("catalogo.max-retries=0", "catalogo.read-timeout=300ms")
                 .run(context -> assertThatThrownBy(() -> context.getBean(CatalogClient.class).findProfessional(201L))
                         .isInstanceOf(AvailabilityException.class)
                         .extracting("code").isEqualTo(AvailabilityException.CATALOG_UNAVAILABLE));
