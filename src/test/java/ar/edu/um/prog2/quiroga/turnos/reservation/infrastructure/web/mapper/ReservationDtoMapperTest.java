@@ -3,7 +3,10 @@ package ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.web.mapper;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.HOLD_EXPIRES_AT;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.MONDAY;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.TWELVE_THIRTY;
+import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.NOW;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.held;
+import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.phoneRequest;
+import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.waitingForPhone;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationProcess;
@@ -41,6 +44,19 @@ class ReservationDtoMapperTest {
         assertThat(response.getStartTime()).isEqualTo(TWELVE_THIRTY);
         assertThat(response.getExpiresAt()).isEqualTo(HOLD_EXPIRES_AT);
         assertThat(response.getFailureCode()).isNull();
+        assertThat(response.isPhoneRequested()).isFalse();
+        assertThat(response.getPhoneRequestMessage()).isNull();
+    }
+
+    @Test
+    void thePhoneRequestTellsTheAppToAskForIt() {
+        ReservationProcess process = waitingForPhone();
+        process.receivePhoneRequest(phoneRequest(), NOW);
+
+        ReservationResponse response = mapper.toResponse(process);
+
+        assertThat(response.isPhoneRequested()).isTrue();
+        assertThat(response.getPhoneRequestMessage()).isEqualTo("Ingrese un numero de telefono para continuar.");
     }
 
     @Test

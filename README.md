@@ -63,7 +63,7 @@ En Windows, usar `mvnw.cmd` en lugar de `./mvnw`.
 ./mvnw verify
 ```
 
-Los tests levantan su propio PostgreSQL descartable con **Testcontainers** y usan **WireMock** en lugar del catálogo y de la cátedra: no necesitan el `.env` ni el compose, solo Docker funcionando.
+Los tests levantan su propio PostgreSQL descartable con **Testcontainers** y usan **WireMock** en lugar del catálogo y de la cátedra (y Kafka en Testcontainers): no necesitan el `.env` ni el compose, solo Docker funcionando.
 
 En cada push y PR, el CI además analiza el código con **[SonarQube Cloud](https://sonarcloud.io/summary/new_code?id=prog-2-SQR_Backend-Turnos)**: quality gate, bugs, vulnerabilidades, duplicación y la cobertura de JaCoCo. El token está en el secret `SONAR_TOKEN` del repositorio.
 
@@ -81,6 +81,9 @@ En cada push y PR, el CI además analiza el código con **[SonarQube Cloud](http
 | `CATEDRA_API_URL` | (obligatoria) | URL base de la API REST de la cátedra (llega por ZeroTier) |
 | `CATEDRA_JWT` | (obligatoria) | JWT técnico de la cuenta del proyecto. Nunca se commitea |
 | `CATALOGO_API_URL` | `http://localhost:8080` | URL del servicio de catálogo |
+| `KAFKA_BOOTSTRAP_SERVERS` | `localhost:9092` | Broker de Kafka de la cátedra |
+| `KAFKA_CONSUMER_GROUP_ID` | `alumnos` | Consumer group de la integración; Turnos le agrega `-turnos` |
+| `KAFKA_APPOINTMENT_ACTIONS_TOPIC` | (obligatoria) | Topic de acciones de reserva (`alumnos.turnos.acciones.<groupId>`) |
 | `TURNOS_TIME_ZONE` | `America/Argentina/Buenos_Aires` | Zona de las horas de atención: define qué turnos de hoy ya empezaron |
 
 Los usuarios se registran con `POST /api/register` e inician sesión con `POST /api/authenticate`, que devuelve `{"id_token": "..."}` (contrato de JHipster). El resto de las APIs requiere `Authorization: Bearer <id_token>`; sin token responden `401`.
@@ -109,6 +112,8 @@ Revalida el turno con la disponibilidad vigente, pide el hold a la cátedra y lo
 - Un usuario tiene como mucho **una reserva en curso**: lo garantiza un índice único parcial de PostgreSQL (`409 RESERVATION_ALREADY_PENDING`).
 - El proceso se guarda antes de llamar a la cátedra y después de cada respuesta. Los rechazos de la cátedra llegan con su mismo code (`409 SLOT_ALREADY_HELD`, `400 INVALID_SLOT`...) y el proceso queda `FAILED` o `EXPIRED`.
 - La cátedra exige nombre y apellido del paciente: salen de la cuenta, o de `patientFirstName` y `patientLastName` en el pedido (`400 PATIENT_NAME_REQUIRED` si faltan).
+
+Después la cátedra pide el teléfono por Kafka (`AdditionalInformationRequested`, topic `KAFKA_APPOINTMENT_ACTIONS_TOPIC`). Turnos lo registra en el proceso y `GET /api/reservations/{id}` lo muestra con `phoneRequested: true` y el mensaje de la cátedra. Un evento repetido (mismo `eventId`) no tiene efecto, uno de un proceso terminado se ignora, y uno que llega antes de que se guarde la confirmación del hold se reintenta. Turnos usa su propio consumer group (`KAFKA_CONSUMER_GROUP_ID` + `-turnos`), para no rebalancearse con el catálogo.
 
 Estados, reintentos y alternativas en el [ADR 0004](docs/adr/0004-proceso-de-reserva.md).
 
