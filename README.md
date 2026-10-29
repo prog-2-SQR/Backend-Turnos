@@ -96,6 +96,22 @@ Los usuarios se registran con `POST /api/register` e inician sesión con `POST /
 
 Turnos no guarda el catálogo: en cada consulta pide el profesional y sus horarios al servicio de catálogo, **reenviando el token del usuario** (*token relay*), y las ocupaciones a la cátedra con el JWT técnico. Arma los turnos de cada horario del día y saca los ocupados (reservas confirmadas y holds activos) y, si la fecha es hoy, los que ya empezaron. Errores: `400 INVALID_DATE` (fecha pasada), `404 PROFESSIONAL_NOT_FOUND`, `400 PROFESSIONAL_DISABLED`, `503 CATALOG_UNAVAILABLE` o `503 CATEDRA_UNAVAILABLE` (después de 2 reintentos). Detalle en el [ADR 0003](docs/adr/0003-consulta-al-catalogo-con-token-relay.md).
 
+## Reservas
+
+`POST /api/reservations` inicia una reserva del usuario del token:
+
+```json
+{"professionalId": 201, "date": "2026-11-02", "startTime": "12:30"}
+```
+
+Revalida el turno con la disponibilidad vigente, pide el hold a la cátedra y lo confirma. Responde `201` con el proceso en `WAITING_FOR_PHONE` y su `expiresAt`; la cátedra pide el teléfono por Kafka. `GET /api/reservations/{id}` devuelve un proceso propio (uno ajeno da `404`).
+
+- Un usuario tiene como mucho **una reserva en curso**: lo garantiza un índice único parcial de PostgreSQL (`409 RESERVATION_ALREADY_PENDING`).
+- El proceso se guarda antes de llamar a la cátedra y después de cada respuesta. Los rechazos de la cátedra llegan con su mismo code (`409 SLOT_ALREADY_HELD`, `400 INVALID_SLOT`...) y el proceso queda `FAILED` o `EXPIRED`.
+- La cátedra exige nombre y apellido del paciente: salen de la cuenta, o de `patientFirstName` y `patientLastName` en el pedido (`400 PATIENT_NAME_REQUIRED` si faltan).
+
+Estados, reintentos y alternativas en el [ADR 0004](docs/adr/0004-proceso-de-reserva.md).
+
 ## Stack
 
 | Componente | Versión |
@@ -113,6 +129,7 @@ Turnos no guarda el catálogo: en cada consulta pide el profesional y sus horari
 - [ADR 0001: Motor de base de datos](docs/adr/0001-motor-de-base-de-datos.md)
 - [ADR 0002: Hash de contraseñas con Argon2id](docs/adr/0002-hash-de-contrasenas-con-argon2id.md)
 - [ADR 0003: Consulta al catálogo en el momento, con token relay](docs/adr/0003-consulta-al-catalogo-con-token-relay.md)
+- [ADR 0004: Proceso de reserva: estados, hold y confirmación](docs/adr/0004-proceso-de-reserva.md)
 
 ## Repositorios del proyecto
 
