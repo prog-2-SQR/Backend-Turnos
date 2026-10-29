@@ -1,5 +1,6 @@
 package ar.edu.um.prog2.quiroga.turnos.config;
 
+import java.net.http.HttpClient;
 import java.time.Duration;
 
 import ar.edu.um.prog2.quiroga.turnos.shared.security.TokenRelayInterceptor;
@@ -59,9 +60,13 @@ public class HttpClientsConfig {
         return retryTemplate("el catálogo", properties.getMaxRetries(), properties.getRetryDelay());
     }
 
+    // HTTP/1.1 fijo: con URLs http:// el cliente del JDK intenta pasar a HTTP/2 (h2c) en el mismo pedido, y en
+    // un POST con cuerpo ese cambio de protocolo puede cortar la conexión ("EOF reached while reading").
     private static ClientHttpRequestFactory requestFactory(Duration connectTimeout, Duration readTimeout) {
         HttpClientSettings settings = HttpClientSettings.defaults().withTimeouts(connectTimeout, readTimeout);
-        return ClientHttpRequestFactoryBuilder.detect().build(settings);
+        return ClientHttpRequestFactoryBuilder.jdk()
+                .withHttpClientCustomizer(builder -> builder.version(HttpClient.Version.HTTP_1_1))
+                .build(settings);
     }
 
     // Solo se reintenta lo que puede resolverse solo: el servicio no responde (timeout) o falla del lado servidor

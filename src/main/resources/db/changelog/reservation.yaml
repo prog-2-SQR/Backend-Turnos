@@ -1,0 +1,89 @@
+# Procesos de reserva (slice reservation). El usuario se referencia por ID, sin clave foránea a jhi_user.
+databaseChangeLog:
+  - changeSet:
+      id: create-reservation-process
+      author: SantiQR-UM
+      changes:
+        - createTable:
+            tableName: reservation_process
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: external_patient_id
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: professional_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: appointment_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_time
+                  type: time
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: hold_id
+                  type: varchar(100)
+              - column:
+                  name: catedra_process_id
+                  type: varchar(100)
+                  constraints:
+                    unique: true
+                    uniqueConstraintName: ux_reservation_catedra_process
+              - column:
+                  name: expires_at
+                  type: timestamp with time zone
+              - column:
+                  name: failure_code
+                  type: varchar(60)
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: one-pending-reservation-per-user
+      author: SantiQR-UM
+      comment: >
+        Un solo proceso pendiente por usuario (ADR 0001): índice único parcial, los procesos terminados no cuentan.
+        Si dos pedidos del mismo usuario llegan a la vez, la base deja pasar uno.
+      changes:
+        - sql:
+            sql: >
+              CREATE UNIQUE INDEX ux_reservation_one_pending_per_user ON reservation_process (user_id)
+              WHERE status IN ('REQUESTED', 'HELD', 'WAITING_FOR_PHONE', 'PHONE_SUBMITTED')
+      rollback:
+        - sql:
+            sql: DROP INDEX ux_reservation_one_pending_per_user
