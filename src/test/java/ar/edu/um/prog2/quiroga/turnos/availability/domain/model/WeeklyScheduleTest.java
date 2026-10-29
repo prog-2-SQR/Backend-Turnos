@@ -52,6 +52,14 @@ class WeeklyScheduleTest {
     }
 
     @Test
+    void scheduleWithoutDurationGeneratesNothing() {
+        WeeklySchedule withoutDuration = mondayNoonToThree();
+        withoutDuration.setSlotDurationMinutes(null);
+
+        assertThat(withoutDuration.slotsOn(MONDAY)).isEmpty();
+    }
+
+    @Test
     void lateScheduleDoesNotGoPastMidnight() {
         List<AvailableSlot> slots = schedule(DayOfWeek.MONDAY, "23:00", "23:59", 30).slotsOn(MONDAY);
 
