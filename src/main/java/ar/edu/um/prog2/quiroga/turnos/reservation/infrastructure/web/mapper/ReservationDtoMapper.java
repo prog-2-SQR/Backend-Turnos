@@ -30,6 +30,8 @@ public class ReservationDtoMapper {
                 .startTime(process.getStartTime())
                 .expiresAt(process.getExpiresAt())
                 .failureCode(process.getFailureCode())
+                .phoneRequested(process.isPhoneRequested())
+                .phoneRequestMessage(process.isPhoneRequested() ? process.getPhoneRequestMessage() : null)
                 .build();
     }
 }

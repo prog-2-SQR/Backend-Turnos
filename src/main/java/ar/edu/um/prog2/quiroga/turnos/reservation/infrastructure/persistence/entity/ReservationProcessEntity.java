@@ -54,6 +54,10 @@ public class ReservationProcessEntity {
     private Instant expiresAt;
     @Column(length = 60)
     private String failureCode;
+    @Column(length = 100)
+    private String phoneRequestEventId;
+    @Column(length = 500)
+    private String phoneRequestMessage;
     @Column(nullable = false)
     private Instant createdAt;
     @Column(nullable = false)

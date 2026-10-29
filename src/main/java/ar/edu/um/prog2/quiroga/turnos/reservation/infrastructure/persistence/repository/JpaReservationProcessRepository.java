@@ -11,4 +11,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface JpaReservationProcessRepository extends JpaRepository<ReservationProcessEntity, UUID> {
 
     Optional<ReservationProcessEntity> findFirstByUserIdAndStatusIn(Long userId, Collection<ReservationStatus> statuses);
+
+    Optional<ReservationProcessEntity> findByCatedraProcessId(String catedraProcessId);
 }

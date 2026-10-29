@@ -6,6 +6,8 @@ import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixt
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.TWELVE_THIRTY;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.held;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.hold;
+import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.phoneRequest;
+import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.waitingForPhone;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.requested;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -101,6 +103,37 @@ class ReservationProcessTest {
         process.close(NOW.plus(ReservationProcess.REQUEST_TIMEOUT));
         assertThat(process.getStatus()).isEqualTo(ReservationStatus.FAILED);
         assertThat(process.getFailureCode()).isEqualTo(ReservationProcess.ABANDONED);
+    }
+
+    @Test
+    void aPhoneRequestIsKeptToAnswerIt() {
+        ReservationProcess process = waitingForPhone();
+        assertThat(process.isPhoneRequested()).isFalse();
+
+        process.receivePhoneRequest(phoneRequest(), NOW);
+
+        assertThat(process.getStatus()).isEqualTo(ReservationStatus.WAITING_FOR_PHONE);
+        assertThat(process.getPhoneRequestEventId()).isEqualTo("request-event-8a31");
+        assertThat(process.getPhoneRequestMessage()).isEqualTo("Ingrese un numero de telefono para continuar.");
+        assertThat(process.getExpiresAt()).isEqualTo(HOLD_EXPIRES_AT.plusSeconds(300));
+        assertThat(process.isPhoneRequested()).isTrue();
+    }
+
+    @Test
+    void aNewPhoneRequestAfterSendingOneWaitsAgain() {
+        ReservationProcess process = waitingForPhone();
+        process.setStatus(ReservationStatus.PHONE_SUBMITTED);
+
+        process.receivePhoneRequest(phoneRequest(), NOW);
+
+        assertThat(process.getStatus()).isEqualTo(ReservationStatus.WAITING_FOR_PHONE);
+    }
+
+    @Test
+    void theConfirmationIsInFlightUntilItIsSaved() {
+        assertThat(requested().isConfirmationInFlight()).isTrue();
+        assertThat(held().isConfirmationInFlight()).isTrue();
+        assertThat(waitingForPhone().isConfirmationInFlight()).isFalse();
     }
 
     @Test

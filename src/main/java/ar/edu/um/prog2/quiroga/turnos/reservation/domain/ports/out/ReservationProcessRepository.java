@@ -13,4 +13,7 @@ public interface ReservationProcessRepository {
     Optional<ReservationProcess> findReservationProcessById(UUID id);
 
     Optional<ReservationProcess> findPendingReservationProcess(Long userId);
+
+    /** Por el reservationProcessId de la cátedra: así llegan identificados los eventos de Kafka (anexo §15). */
+    Optional<ReservationProcess> findReservationProcessByCatedraProcessId(String catedraProcessId);
 }

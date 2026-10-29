@@ -28,4 +28,8 @@ public class ReservationResponse {
     private LocalTime startTime;
     private Instant expiresAt;
     private String failureCode;
+    /** true: la cátedra ya pidió el teléfono y la app tiene que preguntárselo al usuario. */
+    private boolean phoneRequested;
+    /** El texto que mandó la cátedra para pedirlo (anexo §15.4). */
+    private String phoneRequestMessage;
 }

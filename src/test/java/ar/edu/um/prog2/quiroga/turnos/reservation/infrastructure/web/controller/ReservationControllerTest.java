@@ -2,7 +2,8 @@ package ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.web.controller
 
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.HOLD_EXPIRES_AT;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.NOW;
-import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.held;
+import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.phoneRequest;
+import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.waitingForPhone;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -67,12 +68,6 @@ class ReservationControllerTest {
         SecurityContextHolder.clearContext();
     }
 
-    private static ReservationProcess waitingForPhone() {
-        ReservationProcess process = held();
-        process.waitForPhone(null, NOW);
-        return process;
-    }
-
     @Test
     void startsTheReservationOfTheUserOfTheToken() throws Exception {
         ReservationProcess process = waitingForPhone();
@@ -134,6 +129,18 @@ class ReservationControllerTest {
         mockMvc.perform(get("/api/reservations/{id}", process.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("WAITING_FOR_PHONE"));
+    }
+
+    @Test
+    void showsWhenTheCatedraAskedForThePhone() throws Exception {
+        ReservationProcess process = waitingForPhone();
+        process.receivePhoneRequest(phoneRequest(), NOW);
+        when(reservationService.getReservation("juan.perez", process.getId())).thenReturn(process);
+
+        mockMvc.perform(get("/api/reservations/{id}", process.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.phoneRequested").value(true))
+                .andExpect(jsonPath("$.phoneRequestMessage").value("Ingrese un numero de telefono para continuar."));
     }
 
     @Test

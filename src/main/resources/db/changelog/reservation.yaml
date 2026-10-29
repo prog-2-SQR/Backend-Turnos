@@ -87,3 +87,40 @@ databaseChangeLog:
       rollback:
         - sql:
             sql: DROP INDEX ux_reservation_one_pending_per_user
+  - changeSet:
+      id: reservation-phone-request
+      author: SantiQR-UM
+      comment: Pedido de teléfono de la cátedra (AdditionalInformationRequested); su eventId vuelve como requestEventId.
+      changes:
+        - addColumn:
+            tableName: reservation_process
+            columns:
+              - column:
+                  name: phone_request_event_id
+                  type: varchar(100)
+              - column:
+                  name: phone_request_message
+                  type: varchar(500)
+  - changeSet:
+      id: create-reservation-processed-events
+      author: SantiQR-UM
+      changes:
+        - createTable:
+            tableName: reservation_processed_events
+            columns:
+              - column:
+                  name: event_id
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: event_type
+                  type: varchar(60)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: processed_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
