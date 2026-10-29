@@ -43,10 +43,11 @@ class ReservationActionsKafkaTest {
     @TestConfiguration(proxyBeanMethods = false)
     static class KafkaConfiguration {
 
+        // Imagen JVM: la nativa (apache/kafka-native) se cayó con un segfault en el runner del CI.
         @Bean
         @ServiceConnection
         KafkaContainer kafkaContainer() {
-            return new KafkaContainer(DockerImageName.parse("apache/kafka-native:4.1.1"));
+            return new KafkaContainer(DockerImageName.parse("apache/kafka:4.1.1"));
         }
 
         // KafkaAdmin crea el topic al arrancar, antes de que el listener se suscriba.
