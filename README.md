@@ -8,6 +8,8 @@ Detalle completo en [`docs/EVALUACION.md`](docs/EVALUACION.md).
 # Backend-Turnos
 
 [![CI](https://github.com/prog-2-SQR/Backend-Turnos/actions/workflows/ci.yml/badge.svg)](https://github.com/prog-2-SQR/Backend-Turnos/actions/workflows/ci.yml)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=prog-2-SQR_Backend-Turnos&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=prog-2-SQR_Backend-Turnos)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=prog-2-SQR_Backend-Turnos&metric=coverage)](https://sonarcloud.io/summary/new_code?id=prog-2-SQR_Backend-Turnos)
 
 Servicio de **turnos y reservas** del proyecto integrador de Programación 2 (Universidad de Mendoza, 2026).
 
@@ -62,6 +64,8 @@ En Windows, usar `mvnw.cmd` en lugar de `./mvnw`.
 ```
 
 Los tests levantan su propio PostgreSQL descartable con **Testcontainers** y usan **WireMock** en lugar del catálogo y de la cátedra: no necesitan el `.env` ni el compose, solo Docker funcionando.
+
+En cada push y PR, el CI además analiza el código con **[SonarQube Cloud](https://sonarcloud.io/summary/new_code?id=prog-2-SQR_Backend-Turnos)**: quality gate, bugs, vulnerabilidades, duplicación y la cobertura de JaCoCo. El token está en el secret `SONAR_TOKEN` del repositorio.
 
 ## Configuración
 
