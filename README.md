@@ -125,6 +125,8 @@ Revalida el turno con la disponibilidad vigente, pide el hold a la cátedra y lo
 
 `GET /api/reservations?page=0&size=20` lista las reservas propias, en curso y terminadas, de la más nueva a la más vieja: `{"content": [...], "page": 0, "size": 20, "totalElements": 3, "totalPages": 1}`. `size` va de 1 a 100.
 
+`POST /api/reservations/{id}/cancel` cancela una reserva propia **confirmada**, con un motivo opcional (`{"reason": "..."}`, hasta 500 caracteres). Primero se cancela en la cátedra (anexo §12) y después en Turnos; responde `200` con el proceso en `CANCELLED`. Una ya cancelada se devuelve igual; en otro estado → `409 RESERVATION_NOT_CANCELLABLE`.
+
 - Un usuario tiene como mucho **una reserva en curso**: lo garantiza un índice único parcial de PostgreSQL (`409 RESERVATION_ALREADY_PENDING`).
 - El proceso se guarda antes de llamar a la cátedra y después de cada respuesta. Los rechazos de la cátedra llegan con su mismo code (`409 SLOT_ALREADY_HELD`, `400 INVALID_SLOT`...) y el proceso queda `FAILED` o `EXPIRED`.
 - La cátedra exige nombre y apellido del paciente: salen de la cuenta, o de `patientFirstName` y `patientLastName` en el pedido (`400 PATIENT_NAME_REQUIRED` si faltan).
