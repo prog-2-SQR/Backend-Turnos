@@ -26,6 +26,7 @@ public class ReservationExceptionHandler {
             Map.entry(ReservationException.RESERVATION_NOT_FOUND, HttpStatus.NOT_FOUND),
             Map.entry(ReservationException.PATIENT_NAME_REQUIRED, HttpStatus.BAD_REQUEST),
             Map.entry(ReservationException.PHONE_NOT_REQUESTED, HttpStatus.CONFLICT),
+            Map.entry(ReservationException.RESERVATION_NOT_CANCELLABLE, HttpStatus.CONFLICT),
             Map.entry(ReservationException.INVALID_PHONE_NUMBER, HttpStatus.BAD_REQUEST),
             Map.entry(ReservationException.SLOT_NOT_AVAILABLE, HttpStatus.CONFLICT),
             Map.entry(ReservationException.HOLD_EXPIRED, HttpStatus.CONFLICT),

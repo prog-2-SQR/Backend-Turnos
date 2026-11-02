@@ -191,6 +191,28 @@ class ReservationFlowTest {
     }
 
     @Test
+    void aConfirmedReservationIsCancelledOnlyByItsOwner() throws Exception {
+        String juan = registerAndLogIn("juan.perez");
+        String id = JsonPath.read(startReservation(juan, 201), "$.id");
+        String cancel = "/api/reservations/" + id + "/cancel";
+        // En curso todavía no se puede cancelar.
+        mockMvc.perform(MockMvcRequestBuilders.post(cancel).header("Authorization", juan))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("RESERVATION_NOT_CANCELLABLE"));
+        // Lo que dejaría AppointmentConfirmed.
+        jdbcTemplate.update("UPDATE reservation_process SET status = 'CONFIRMED' WHERE id = ?::uuid", id);
+        catedra.stubFor(post("/api/appointments/process-1/cancel").willReturn(okJson("""
+                {"reservationId": 8251, "reservationProcessId": "process-1", "status": "CANCELLED"}""")));
+
+        mockMvc.perform(MockMvcRequestBuilders.post(cancel).header("Authorization", registerAndLogIn("ana.gomez")))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(MockMvcRequestBuilders.post(cancel).header("Authorization", juan))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLED"));
+        catedra.verify(1, postRequestedFor(urlEqualTo("/api/appointments/process-1/cancel")));
+    }
+
+    @Test
     void withoutTokenIs401() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/reservations").contentType(MediaType.APPLICATION_JSON).content(RESERVATION))
                 .andExpect(status().isUnauthorized());

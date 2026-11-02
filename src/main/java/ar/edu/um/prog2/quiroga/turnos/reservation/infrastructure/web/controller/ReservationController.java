@@ -3,6 +3,7 @@ package ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.web.controller
 import java.util.UUID;
 
 import ar.edu.um.prog2.quiroga.turnos.reservation.application.service.ReservationService;
+import ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.web.dto.CancelReservationRequest;
 import ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.web.dto.ReservationPageResponse;
 import ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.web.dto.ReservationResponse;
 import ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.web.dto.StartReservationRequest;
@@ -59,5 +60,13 @@ public class ReservationController {
     public ReservationResponse submitPhone(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id,
                                            @Valid @RequestBody SubmitPhoneRequest request) {
         return reservationDtoMapper.toResponse(reservationService.submitPhone(jwt.getSubject(), id, request.getPhoneNumber()));
+    }
+
+    // Solo una reserva propia confirmada; el body con el motivo es opcional. Una ya cancelada se devuelve igual.
+    @PostMapping("/{id}/cancel")
+    public ReservationResponse cancelReservation(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id,
+                                                 @Valid @RequestBody(required = false) CancelReservationRequest request) {
+        String reason = request == null ? null : request.getReason();
+        return reservationDtoMapper.toResponse(reservationService.cancelReservation(jwt.getSubject(), id, reason));
     }
 }
