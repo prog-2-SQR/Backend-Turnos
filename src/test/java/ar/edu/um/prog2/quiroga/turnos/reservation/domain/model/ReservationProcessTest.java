@@ -247,4 +247,52 @@ class ReservationProcessTest {
         assertThat(process.getStatus()).isEqualTo(ReservationStatus.CANCELLED);
         assertThat(process.isCancellable()).isFalse();
     }
+
+    private static CatedraReservation inCatedra(CatedraReservationStatus status) {
+        return CatedraReservation.builder().catedraProcessId("process-a92b47d0").catedraReservationId(1258L).status(status).build();
+    }
+
+    @Test
+    void aProcessFailedByTheCatedraWithoutAnEventIsReconciled() {
+        ReservationProcess process = waitingForPhone();
+
+        assertThat(process.reconcileWith(inCatedra(CatedraReservationStatus.FAILED), NOW)).isTrue();
+
+        assertThat(process.getStatus()).isEqualTo(ReservationStatus.FAILED);
+        assertThat(process.getFailureCode()).isEqualTo("CATEDRA_FAILED");
+    }
+
+    @Test
+    void aConfirmationWhoseEventWasLostIsReconciled() {
+        ReservationProcess process = phoneSubmitted();
+
+        assertThat(process.reconcileWith(inCatedra(CatedraReservationStatus.CONFIRMED), NOW)).isTrue();
+
+        assertThat(process.getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
+        assertThat(process.getCatedraReservationId()).isEqualTo(1258L);
+    }
+
+    @Test
+    void aHoldConfirmedWhoseResponseWasLostWaitsForThePhone() {
+        ReservationProcess process = held();
+
+        assertThat(process.reconcileWith(inCatedra(CatedraReservationStatus.PHONE_PENDING), NOW)).isTrue();
+
+        assertThat(process.getStatus()).isEqualTo(ReservationStatus.WAITING_FOR_PHONE);
+    }
+
+    @Test
+    void theSameStatusOrAnUnknownOneChangesNothing() {
+        assertThat(waitingForPhone().reconcileWith(inCatedra(CatedraReservationStatus.PHONE_PENDING), NOW)).isFalse();
+        assertThat(waitingForPhone().reconcileWith(inCatedra(null), NOW)).isFalse();
+    }
+
+    @Test
+    void aFinalStatusDoesNotGoBackWithTheReconciliation() {
+        ReservationProcess process = phoneSubmitted();
+        process.applyResult(result(ReservationResultType.CONFIRMED), NOW);
+
+        assertThat(process.reconcileWith(inCatedra(CatedraReservationStatus.FAILED), NOW)).isFalse();
+        assertThat(process.getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
+    }
 }

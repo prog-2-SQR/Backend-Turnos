@@ -14,6 +14,7 @@ import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.HandlePhoneReq
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.HandleReservationResultUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.ListReservationsUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.PublishPhoneSubmissionsUseCase;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.ReconcileReservationsUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.StartReservationUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.SubmitPhoneUseCase;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class ReservationService {
     private final HandleReservationResultUseCase handleReservationResultUseCase;
     private final ListReservationsUseCase listReservationsUseCase;
     private final CancelReservationUseCase cancelReservationUseCase;
+    private final ReconcileReservationsUseCase reconcileReservationsUseCase;
 
     public ReservationProcess startReservation(String login, ReservationRequest request) {
         return startReservationUseCase.startReservation(login, request);
@@ -55,6 +57,10 @@ public class ReservationService {
 
     public ReservationProcess submitPhone(String login, UUID id, String phoneNumber) {
         return submitPhoneUseCase.submitPhone(login, id, phoneNumber);
+    }
+
+    public int reconcilePendingReservations() {
+        return reconcileReservationsUseCase.reconcilePendingReservations();
     }
 
     public void publishPendingPhoneSubmissions(int maxAttempts) {

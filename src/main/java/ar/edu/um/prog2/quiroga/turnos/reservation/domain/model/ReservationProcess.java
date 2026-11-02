@@ -26,6 +26,8 @@ public class ReservationProcess {
     /** Un pedido sin respuesta de la cátedra por más que esto (por ejemplo, la app se cayó en el medio) se da por fallido. */
     static final Duration REQUEST_TIMEOUT = Duration.ofMinutes(5);
     static final String ABANDONED = "ABANDONED";
+    /** La cátedra dio el proceso por fallido sin avisar por Kafka (lo trajo la reconciliación). */
+    static final String CATEDRA_FAILED = "CATEDRA_FAILED";
     // Largo de las columnas: un texto de la cátedra más largo se corta en lugar de fallar al guardar.
     static final int MAX_FAILURE_CODE = 60;
     static final int MAX_MESSAGE = 500;
@@ -112,6 +114,27 @@ public class ReservationProcess {
         }
         moveTo(ReservationStatus.PHONE_SUBMITTED, now);
         phoneRejectionMessage = null;
+    }
+
+    /**
+     * Reconciliación (anexo §18.4): lleva el proceso al estado que informa la cátedra, si la máquina de estados lo
+     * permite. Devuelve true si cambió. Un estado final no retrocede y un estado igual no cambia nada.
+     */
+    public boolean reconcileWith(CatedraReservation catedra, Instant now) {
+        if (catedra.getStatus() == null) {
+            return false;
+        }
+        ReservationStatus target = catedra.getStatus().getLocalStatus();
+        if (target == status || !status.canMoveTo(target)) {
+            return false;
+        }
+        moveTo(target, now);
+        if (target == ReservationStatus.CONFIRMED) {
+            catedraReservationId = catedra.getCatedraReservationId();
+        } else if (target == ReservationStatus.FAILED) {
+            failureCode = CATEDRA_FAILED;
+        }
+        return true;
     }
 
     /** Solo una reserva confirmada se puede cancelar (enunciado §5 punto 14; anexo §12). */

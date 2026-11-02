@@ -1,20 +1,31 @@
 package ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.client.adapter;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.absent;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
 import static com.github.tomakehurst.wiremock.client.WireMock.serviceUnavailable;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.List;
 
 import ar.edu.um.prog2.quiroga.turnos.config.HttpClientsConfig;
 import ar.edu.um.prog2.quiroga.turnos.reservation.application.exception.ReservationException;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.CatedraReservation;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.CatedraReservationStatus;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.out.CatedraReservationClient;
+import ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.client.mapper.CatedraAppointmentMapper;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -37,6 +48,7 @@ class CatedraReservationClientAdapterTest {
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(HttpClientAutoConfiguration.class, RestClientAutoConfiguration.class))
             .withUserConfiguration(HttpClientsConfig.class)
+            .withBean(CatedraAppointmentMapper.class)
             .withBean(CatedraReservationClientAdapter.class)
             .withPropertyValues(
                     "catedra.api-url=" + catedra.baseUrl(),
@@ -85,6 +97,39 @@ class CatedraReservationClientAdapterTest {
 
         contextRunner.run(context -> assertThatThrownBy(() -> context.getBean(CatedraReservationClient.class)
                 .cancelReservation("process-a92b47d0", null))
+                .isInstanceOf(ReservationException.class)
+                .extracting("code").isEqualTo(ReservationException.CATEDRA_UNAVAILABLE));
+    }
+
+    @Test
+    void readsTheReservationsOfThePatientWithoutDates() {
+        // Formato del anexo §11, con un estado que la app no conoce.
+        catedra.stubFor(get(urlPathEqualTo("/api/appointments")).willReturn(okJson("""
+                [{"reservationId": 1258, "reservationProcessId": "process-6593b40d", "externalPatientId": "user-11",
+                  "appointmentDate": "2026-11-03", "startTime": "13:00:00", "status": "FAILED"},
+                 {"reservationId": 1259, "reservationProcessId": "process-otro", "status": "UN_ESTADO_NUEVO"}]""")));
+
+        contextRunner.run(context -> {
+            List<CatedraReservation> reservations = context.getBean(CatedraReservationClient.class).findReservationsOfPatient("user-11");
+
+            assertThat(reservations).extracting(CatedraReservation::getCatedraProcessId).containsExactly("process-6593b40d", "process-otro");
+            assertThat(reservations.getFirst().getStatus()).isEqualTo(CatedraReservationStatus.FAILED);
+            assertThat(reservations.getFirst().getCatedraReservationId()).isEqualTo(1258L);
+            assertThat(reservations.get(1).getStatus()).isNull();
+        });
+        catedra.verify(getRequestedFor(urlPathEqualTo("/api/appointments"))
+                .withQueryParam("externalPatientId", equalTo("user-11"))
+                .withQueryParam("from", absent())
+                .withQueryParam("to", absent())
+                .withHeader("Authorization", equalTo("Bearer jwt-tecnico-de-prueba")));
+    }
+
+    @Test
+    void aListingThatFailsIsCatedraUnavailable() {
+        catedra.stubFor(get(urlPathEqualTo("/api/appointments")).willReturn(serverError()));
+
+        contextRunner.run(context -> assertThatThrownBy(() -> context.getBean(CatedraReservationClient.class)
+                .findReservationsOfPatient("user-11"))
                 .isInstanceOf(ReservationException.class)
                 .extracting("code").isEqualTo(ReservationException.CATEDRA_UNAVAILABLE));
     }

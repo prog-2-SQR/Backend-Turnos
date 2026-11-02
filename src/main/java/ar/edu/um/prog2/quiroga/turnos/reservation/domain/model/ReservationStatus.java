@@ -32,9 +32,11 @@ public enum ReservationStatus {
     static {
         NEXT.put(REQUESTED, EnumSet.of(HELD, FAILED));
         NEXT.put(HELD, EnumSet.of(WAITING_FOR_PHONE, FAILED, EXPIRED));
-        NEXT.put(WAITING_FOR_PHONE, EnumSet.of(PHONE_SUBMITTED, CONFIRMED, EXPIRED, INVALID));
+        // FAILED desde la espera del teléfono: la cátedra puede dar el proceso por fallido sin publicar un evento, y la
+        // reconciliación lo trae desde GET /api/appointments (visto el 02/11).
+        NEXT.put(WAITING_FOR_PHONE, EnumSet.of(PHONE_SUBMITTED, CONFIRMED, EXPIRED, INVALID, FAILED));
         // Un teléfono rechazado vuelve a WAITING_FOR_PHONE: se puede reintentar hasta expiresAt (anexo §15.7).
-        NEXT.put(PHONE_SUBMITTED, EnumSet.of(WAITING_FOR_PHONE, CONFIRMED, EXPIRED, INVALID));
+        NEXT.put(PHONE_SUBMITTED, EnumSet.of(WAITING_FOR_PHONE, CONFIRMED, EXPIRED, INVALID, FAILED));
         NEXT.put(CONFIRMED, EnumSet.of(CANCELLED));
         for (ReservationStatus finalStatus : EnumSet.of(FAILED, EXPIRED, INVALID, CANCELLED)) {
             NEXT.put(finalStatus, EnumSet.noneOf(ReservationStatus.class));

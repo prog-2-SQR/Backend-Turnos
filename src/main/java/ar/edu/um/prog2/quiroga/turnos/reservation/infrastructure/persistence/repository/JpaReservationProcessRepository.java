@@ -1,6 +1,7 @@
 package ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.persistence.repository;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,4 +18,6 @@ public interface JpaReservationProcessRepository extends JpaRepository<Reservati
     Optional<ReservationProcessEntity> findByCatedraProcessId(String catedraProcessId);
 
     Page<ReservationProcessEntity> findByUserId(Long userId, Pageable pageable);
+
+    List<ReservationProcessEntity> findByStatusInAndCatedraProcessIdIsNotNull(Collection<ReservationStatus> statuses);
 }

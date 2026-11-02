@@ -25,6 +25,7 @@ import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.HandlePhoneReq
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.HandleReservationResultUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.ListReservationsUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.PublishPhoneSubmissionsUseCase;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.ReconcileReservationsUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.StartReservationUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.SubmitPhoneUseCase;
 import org.junit.jupiter.api.Test;
@@ -59,6 +60,9 @@ class ReservationServiceTest {
 
     @Mock
     private CancelReservationUseCase cancelReservationUseCase;
+
+    @Mock
+    private ReconcileReservationsUseCase reconcileReservationsUseCase;
 
     @InjectMocks
     private ReservationService reservationService;
@@ -137,5 +141,12 @@ class ReservationServiceTest {
         when(cancelReservationUseCase.cancelReservation("juan.perez", process.getId(), "motivo")).thenReturn(process);
 
         assertThat(reservationService.cancelReservation("juan.perez", process.getId(), "motivo")).isSameAs(process);
+    }
+
+    @Test
+    void reconcilePendingReservationsDelegatesToItsUseCase() {
+        when(reconcileReservationsUseCase.reconcilePendingReservations()).thenReturn(2);
+
+        assertThat(reservationService.reconcilePendingReservations()).isEqualTo(2);
     }
 }

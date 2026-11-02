@@ -1,5 +1,6 @@
 package ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.out;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,6 +18,9 @@ public interface ReservationProcessRepository {
 
     /** Por el reservationProcessId de la cátedra: así llegan identificados los eventos de Kafka (anexo §15). */
     Optional<ReservationProcess> findReservationProcessByCatedraProcessId(String catedraProcessId);
+
+    /** Los procesos en curso que ya tienen un id de la cátedra: los que se pueden reconciliar con ella. */
+    List<ReservationProcess> findReconcilableReservationProcesses();
 
     /** Los procesos de un usuario, del más nuevo al más viejo. */
     ReservationPage findReservationProcessesByUser(Long userId, int page, int size);
