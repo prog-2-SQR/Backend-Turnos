@@ -98,6 +98,7 @@ En cada push y PR, el CI además analiza el código con **[SonarQube Cloud](http
 | `KAFKA_APPOINTMENT_ACTIONS_TOPIC` | (obligatoria) | Topic de acciones de reserva (`alumnos.turnos.acciones.<groupId>`) |
 | `KAFKA_APPOINTMENT_PHONE_TOPIC` | (obligatoria) | Topic donde se publica el teléfono (`catedra.turnos.telefono.<groupId>`) |
 | `CATEDRA_GROUP_ID` | (obligatoria) | `groupId` de la integración: va en cada evento del teléfono |
+| `CATEDRA_RECONCILIATION_INTERVAL` | `PT5M` | Cada cuánto se reconcilian los procesos en curso con la cátedra |
 | `TURNOS_TIME_ZONE` | `America/Argentina/Buenos_Aires` | Zona de las horas de atención: define qué turnos de hoy ya empezaron |
 
 Los usuarios se registran con `POST /api/register` e inician sesión con `POST /api/authenticate`, que devuelve `{"id_token": "..."}` (contrato de JHipster). El resto de las APIs requiere `Authorization: Bearer <id_token>`; sin token responden `401`.
@@ -157,6 +158,10 @@ El resultado llega por el topic de acciones y se ve en `GET /api/reservations/{i
 
 Un evento repetido no tiene efecto y uno tardío no reabre un estado final. Detalle en el [ADR 0005](docs/adr/0005-telefono-con-outbox-y-resultados.md).
 
+### Reconciliación con la cátedra
+
+Si se perdió una respuesta, Turnos se reinició o la cátedra no avisó por Kafka, un proceso puede quedar en curso aunque la cátedra ya lo haya resuelto. Por eso, poco después de arrancar y cada 5 minutos (`CATEDRA_RECONCILIATION_INTERVAL`), Turnos consulta `GET /api/appointments?externalPatientId=user-<id>` por cada paciente con procesos en curso y los pone al día (`CONFIRMED`, `FAILED`, o `WAITING_FOR_PHONE` si se perdió la respuesta de la confirmación). No usa `from`/`to`, que en la cátedra responden 500. Detalle en el [ADR 0006](docs/adr/0006-recuperacion-y-reconciliacion.md).
+
 ## Stack
 
 | Componente | Versión |
@@ -176,6 +181,7 @@ Un evento repetido no tiene efecto y uno tardío no reabre un estado final. Deta
 - [ADR 0003: Consulta al catálogo en el momento, con token relay](docs/adr/0003-consulta-al-catalogo-con-token-relay.md)
 - [ADR 0004: Proceso de reserva: estados, hold y confirmación](docs/adr/0004-proceso-de-reserva.md)
 - [ADR 0005: Teléfono con outbox y resultados del proceso](docs/adr/0005-telefono-con-outbox-y-resultados.md)
+- [ADR 0006: Recuperación de procesos en curso: reconciliación con la cátedra](docs/adr/0006-recuperacion-y-reconciliacion.md)
 
 ## Repositorios del proyecto
 
