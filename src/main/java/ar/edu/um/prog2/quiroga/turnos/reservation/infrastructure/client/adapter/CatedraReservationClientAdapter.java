@@ -2,6 +2,7 @@ package ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.client.adapter
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.CatedraReservation;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.out.CatedraReservationClient;
@@ -26,6 +27,7 @@ public class CatedraReservationClientAdapter implements CatedraReservationClient
     // Sin from/to: con fechas la cátedra responde 500 (probado el 02/11). Un paciente tiene pocas reservas.
     static final String APPOINTMENTS_PATH = "/api/appointments?externalPatientId={externalPatientId}&size={size}";
     static final int PAGE_SIZE = 100;
+    private static final CatedraAppointmentResponse[] NO_APPOINTMENTS = {};
 
     private final RestClient catedraRestClient;
     private final RetryTemplate catedraRetryTemplate;
@@ -52,7 +54,8 @@ public class CatedraReservationClientAdapter implements CatedraReservationClient
                     .uri(APPOINTMENTS_PATH, externalPatientId, PAGE_SIZE)
                     .retrieve()
                     .body(CatedraAppointmentResponse[].class));
-            return response == null ? List.of() : Arrays.stream(response).map(catedraAppointmentMapper::toDomain).toList();
+            // Una respuesta sin cuerpo cuenta como "sin reservas".
+            return Arrays.stream(Objects.requireNonNullElse(response, NO_APPOINTMENTS)).map(catedraAppointmentMapper::toDomain).toList();
         } catch (RestClientException e) {
             throw CatedraErrors.translate(e);
         }
