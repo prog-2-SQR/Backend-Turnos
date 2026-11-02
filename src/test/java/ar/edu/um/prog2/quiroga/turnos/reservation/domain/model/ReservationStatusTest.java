@@ -56,4 +56,11 @@ class ReservationStatusTest {
         assertThat(INVALID.isPending()).isFalse();
         assertThat(FAILED.isPending()).isFalse();
     }
+
+    @Test
+    void theCatedraCanFailAProcessThatIsWaitingForThePhone() {
+        assertThat(WAITING_FOR_PHONE.canMoveTo(FAILED)).isTrue();
+        assertThat(PHONE_SUBMITTED.canMoveTo(FAILED)).isTrue();
+        assertThat(CONFIRMED.canMoveTo(FAILED)).isFalse();
+    }
 }

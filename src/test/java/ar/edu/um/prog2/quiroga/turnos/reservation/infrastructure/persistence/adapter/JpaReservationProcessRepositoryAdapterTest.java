@@ -14,6 +14,7 @@ import java.util.UUID;
 
 import ar.edu.um.prog2.quiroga.turnos.TestcontainersConfiguration;
 import ar.edu.um.prog2.quiroga.turnos.reservation.application.exception.ReservationException;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.Hold;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationPage;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationProcess;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationStatus;
@@ -125,5 +126,22 @@ class JpaReservationProcessRepositoryAdapterTest {
         assertThat(first.getTotalElements()).isEqualTo(3);
         assertThat(first.totalPages()).isEqualTo(2);
         assertThat(adapter.findReservationProcessesByUser(7L, 0, 2).getContent()).isEmpty();
+    }
+
+    @Test
+    void onlyProcessesInProgressWithAnIdOfTheCatedraAreReconcilable() {
+        ReservationProcess requested = adapter.saveReservationProcess(newRequest(1L));
+        ReservationProcess held = adapter.saveReservationProcess(newRequest(2L));
+        held.hold(hold(), NOW);
+        held = adapter.saveReservationProcess(held);
+        ReservationProcess failed = adapter.saveReservationProcess(newRequest(3L));
+        failed.hold(Hold.builder().holdId("hold-2").catedraProcessId("process-2").expiresAt(HOLD_EXPIRES_AT).build(), NOW);
+        failed.fail("X", NOW);
+        adapter.saveReservationProcess(failed);
+
+        assertThat(adapter.findReconcilableReservationProcesses())
+                .extracting(ReservationProcess::getId)
+                .containsExactly(held.getId())
+                .doesNotContain(requested.getId());
     }
 }

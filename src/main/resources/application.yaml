@@ -52,6 +52,8 @@ catedra:
   appointment-actions-topic: ${KAFKA_APPOINTMENT_ACTIONS_TOPIC}
   # Para publicar el teléfono (anexo §15.5): el groupId de la integración va en cada evento, y el topic es
   # catedra.turnos.telefono.{groupId}. Sin valor por defecto: si faltan, la app no arranca.
+  # Reconciliación de los procesos en curso con GET /api/appointments (anexo §18.4): al arrancar y cada tanto.
+  reconciliation-interval: ${CATEDRA_RECONCILIATION_INTERVAL:PT5M}
   phone-outbox:
     group-id: ${CATEDRA_GROUP_ID:}
     topic: ${KAFKA_APPOINTMENT_PHONE_TOPIC:}

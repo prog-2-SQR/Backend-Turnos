@@ -1,5 +1,6 @@
 package ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.persistence.adapter;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -58,6 +59,12 @@ public class JpaReservationProcessRepositoryAdapter implements ReservationProces
     @Override
     public Optional<ReservationProcess> findReservationProcessByCatedraProcessId(String catedraProcessId) {
         return jpaReservationProcessRepository.findByCatedraProcessId(catedraProcessId).map(reservationProcessMapper::toDomain);
+    }
+
+    @Override
+    public List<ReservationProcess> findReconcilableReservationProcesses() {
+        return jpaReservationProcessRepository.findByStatusInAndCatedraProcessIdIsNotNull(ReservationStatus.pendingStatuses())
+                .stream().map(reservationProcessMapper::toDomain).toList();
     }
 
     // Del más nuevo al más viejo; el id desempata para que una misma página devuelva siempre lo mismo.
