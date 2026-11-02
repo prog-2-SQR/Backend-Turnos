@@ -9,6 +9,8 @@ import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.Patient;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.PhoneRequest;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationProcess;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationRequest;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationResult;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationResultType;
 
 /** Juan (usuario 42) pide el turno del lunes 2/11 a las 12:30 con Ana Torres (201), como en el anexo §9. */
 public final class ReservationFixtures {
@@ -48,6 +50,22 @@ public final class ReservationFixtures {
         ReservationProcess process = waitingForPhone();
         process.receivePhoneRequest(phoneRequest(), NOW);
         return process;
+    }
+
+    /** El usuario ya mandó el teléfono: se espera el resultado. */
+    public static ReservationProcess phoneSubmitted() {
+        ReservationProcess process = phoneRequested();
+        process.submitPhone(NOW);
+        return process;
+    }
+
+    /** Un resultado de la cátedra para el proceso del anexo (process-a92b47d0). */
+    public static ReservationResult result(ReservationResultType type) {
+        return ReservationResult.builder()
+                .eventId("result-event-7d10")
+                .type(type)
+                .catedraProcessId("process-a92b47d0")
+                .build();
     }
 
     // Ejemplo del anexo §15.4.

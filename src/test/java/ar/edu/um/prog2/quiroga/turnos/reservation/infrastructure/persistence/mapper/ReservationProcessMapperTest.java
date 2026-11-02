@@ -16,6 +16,8 @@ class ReservationProcessMapperTest {
         process.setFailureCode("X");
         process.setPhoneRequestEventId("request-event-8a31");
         process.setPhoneRequestMessage("Ingrese un numero");
+        process.setPhoneRejectionMessage("El telefono ingresado no es valido.");
+        process.setCatedraReservationId(8251L);
         process.setVersion(3L);
 
         ReservationProcess back = mapper.toDomain(mapper.toEntity(process));

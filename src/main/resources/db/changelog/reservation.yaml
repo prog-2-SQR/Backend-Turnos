@@ -181,3 +181,19 @@ databaseChangeLog:
                   defaultValueNumeric: 0
                   constraints:
                     nullable: false
+  - changeSet:
+      id: reservation-results
+      author: SantiQR-UM
+      comment: >
+        Resultados del proceso (anexo §15.6 y §15.7): el id de la reserva en la cátedra al confirmarse (para cancelarla)
+        y el mensaje del último teléfono rechazado.
+      changes:
+        - addColumn:
+            tableName: reservation_process
+            columns:
+              - column:
+                  name: phone_rejection_message
+                  type: varchar(500)
+              - column:
+                  name: catedra_reservation_id
+                  type: bigint

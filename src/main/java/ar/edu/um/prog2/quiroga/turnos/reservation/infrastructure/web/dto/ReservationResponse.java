@@ -32,4 +32,6 @@ public class ReservationResponse {
     private boolean phoneRequested;
     /** El texto que mandó la cátedra para pedirlo (anexo §15.4). */
     private String phoneRequestMessage;
+    /** Por qué la cátedra rechazó el último teléfono (anexo §15.7): la app lo muestra al pedir otro. */
+    private String phoneRejectionMessage;
 }

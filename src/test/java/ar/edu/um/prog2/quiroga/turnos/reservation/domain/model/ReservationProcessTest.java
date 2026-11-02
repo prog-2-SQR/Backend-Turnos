@@ -8,6 +8,8 @@ import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixt
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.hold;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.phoneRequest;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.phoneRequested;
+import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.phoneSubmitted;
+import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.result;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.waitingForPhone;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.requested;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -159,5 +161,77 @@ class ReservationProcessTest {
         ReservationProcess process = waitingForPhone();
 
         assertThatThrownBy(() -> process.submitPhone(NOW)).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void aConfirmationKeepsTheReservationIdOfTheCatedra() {
+        ReservationProcess process = phoneSubmitted();
+        ReservationResult confirmed = result(ReservationResultType.CONFIRMED);
+        confirmed.setCatedraReservationId(8251L);
+
+        assertThat(process.canApply(confirmed)).isTrue();
+        process.applyResult(confirmed, NOW.plusSeconds(60));
+
+        assertThat(process.getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
+        assertThat(process.getCatedraReservationId()).isEqualTo(8251L);
+        assertThat(process.isPending()).isFalse();
+    }
+
+    @Test
+    void aRejectedPhoneCanBeSentAgainUntilTheNewExpiration() {
+        ReservationProcess process = phoneSubmitted();
+        ReservationResult rejected = result(ReservationResultType.PHONE_REJECTED);
+        rejected.setMessage("El telefono ingresado no es valido.");
+        rejected.setExpiresAt(HOLD_EXPIRES_AT.plusSeconds(120));
+
+        process.applyResult(rejected, NOW.plusSeconds(60));
+
+        assertThat(process.getStatus()).isEqualTo(ReservationStatus.WAITING_FOR_PHONE);
+        assertThat(process.isPhoneRequested()).isTrue();
+        assertThat(process.getPhoneRejectionMessage()).isEqualTo("El telefono ingresado no es valido.");
+        assertThat(process.getExpiresAt()).isEqualTo(HOLD_EXPIRES_AT.plusSeconds(120));
+
+        process.submitPhone(NOW.plusSeconds(90));
+        assertThat(process.getPhoneRejectionMessage()).isNull();
+    }
+
+    @Test
+    void expiredAndInvalidKeepTheReason() {
+        ReservationProcess expired = phoneSubmitted();
+        ReservationResult expiration = result(ReservationResultType.EXPIRED);
+        expiration.setReason("HOLD_EXPIRED");
+        expired.applyResult(expiration, NOW);
+
+        ReservationProcess invalid = phoneSubmitted();
+        ReservationResult invalidation = result(ReservationResultType.INVALID);
+        invalidation.setReason("x".repeat(80));
+        invalid.applyResult(invalidation, NOW);
+
+        assertThat(expired.getStatus()).isEqualTo(ReservationStatus.EXPIRED);
+        assertThat(expired.getFailureCode()).isEqualTo("HOLD_EXPIRED");
+        assertThat(invalid.getStatus()).isEqualTo(ReservationStatus.INVALID);
+        assertThat(invalid.getFailureCode()).hasSize(60);
+    }
+
+    @Test
+    void onlyAConfirmedReservationCanBeCancelled() {
+        ReservationProcess confirmed = phoneSubmitted();
+        confirmed.applyResult(result(ReservationResultType.CONFIRMED), NOW);
+
+        assertThat(phoneSubmitted().canApply(result(ReservationResultType.CANCELLED))).isFalse();
+        assertThat(confirmed.canApply(result(ReservationResultType.CANCELLED))).isTrue();
+        confirmed.applyResult(result(ReservationResultType.CANCELLED), NOW);
+        assertThat(confirmed.getStatus()).isEqualTo(ReservationStatus.CANCELLED);
+    }
+
+    @Test
+    void aLateResultDoesNotReopenAFinalState() {
+        ReservationProcess confirmed = phoneSubmitted();
+        confirmed.applyResult(result(ReservationResultType.CONFIRMED), NOW);
+
+        assertThat(confirmed.canApply(result(ReservationResultType.EXPIRED))).isFalse();
+        assertThat(confirmed.canApply(result(ReservationResultType.PHONE_REJECTED))).isFalse();
+        assertThatThrownBy(() -> confirmed.applyResult(result(ReservationResultType.EXPIRED), NOW))
+                .isInstanceOf(IllegalStateException.class);
     }
 }

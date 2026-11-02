@@ -32,6 +32,7 @@ public class ReservationDtoMapper {
                 .failureCode(process.getFailureCode())
                 .phoneRequested(process.isPhoneRequested())
                 .phoneRequestMessage(process.isPhoneRequested() ? process.getPhoneRequestMessage() : null)
+                .phoneRejectionMessage(process.isPhoneRequested() ? process.getPhoneRejectionMessage() : null)
                 .build();
     }
 }
