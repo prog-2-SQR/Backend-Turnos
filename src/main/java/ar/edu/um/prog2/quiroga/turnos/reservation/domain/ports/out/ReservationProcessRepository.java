@@ -3,6 +3,7 @@ package ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.out;
 import java.util.Optional;
 import java.util.UUID;
 
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationPage;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationProcess;
 
 public interface ReservationProcessRepository {
@@ -16,4 +17,7 @@ public interface ReservationProcessRepository {
 
     /** Por el reservationProcessId de la cátedra: así llegan identificados los eventos de Kafka (anexo §15). */
     Optional<ReservationProcess> findReservationProcessByCatedraProcessId(String catedraProcessId);
+
+    /** Los procesos de un usuario, del más nuevo al más viejo. */
+    ReservationPage findReservationProcessesByUser(Long userId, int page, int size);
 }

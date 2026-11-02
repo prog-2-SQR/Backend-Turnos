@@ -14,6 +14,7 @@ import java.util.UUID;
 
 import ar.edu.um.prog2.quiroga.turnos.reservation.application.exception.ReservationException;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.PhoneRequest;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationPage;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationProcess;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationRequest;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationResult;
@@ -21,6 +22,7 @@ import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationResult
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.GetReservationUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.HandlePhoneRequestUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.HandleReservationResultUseCase;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.ListReservationsUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.PublishPhoneSubmissionsUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.StartReservationUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.SubmitPhoneUseCase;
@@ -50,6 +52,9 @@ class ReservationServiceTest {
 
     @Mock
     private HandleReservationResultUseCase handleReservationResultUseCase;
+
+    @Mock
+    private ListReservationsUseCase listReservationsUseCase;
 
     @InjectMocks
     private ReservationService reservationService;
@@ -112,5 +117,13 @@ class ReservationServiceTest {
         reservationService.handleReservationResult(result);
 
         verify(handleReservationResultUseCase).handleReservationResult(result);
+    }
+
+    @Test
+    void listReservationsDelegatesToItsUseCase() {
+        ReservationPage page = ReservationPage.builder().page(0).size(20).build();
+        when(listReservationsUseCase.listReservations("juan.perez", 0, 20)).thenReturn(page);
+
+        assertThat(reservationService.listReservations("juan.perez", 0, 20)).isSameAs(page);
     }
 }

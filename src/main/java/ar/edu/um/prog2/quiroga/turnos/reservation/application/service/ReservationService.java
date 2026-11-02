@@ -4,12 +4,14 @@ import java.util.UUID;
 
 import ar.edu.um.prog2.quiroga.turnos.reservation.application.exception.ReservationException;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.PhoneRequest;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationPage;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationProcess;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationRequest;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationResult;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.GetReservationUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.HandlePhoneRequestUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.HandleReservationResultUseCase;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.ListReservationsUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.PublishPhoneSubmissionsUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.StartReservationUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.SubmitPhoneUseCase;
@@ -26,6 +28,7 @@ public class ReservationService {
     private final SubmitPhoneUseCase submitPhoneUseCase;
     private final PublishPhoneSubmissionsUseCase publishPhoneSubmissionsUseCase;
     private final HandleReservationResultUseCase handleReservationResultUseCase;
+    private final ListReservationsUseCase listReservationsUseCase;
 
     public ReservationProcess startReservation(String login, ReservationRequest request) {
         return startReservationUseCase.startReservation(login, request);
@@ -34,6 +37,10 @@ public class ReservationService {
     public ReservationProcess getReservation(String login, UUID id) {
         return getReservationUseCase.getReservation(login, id)
                 .orElseThrow(() -> new ReservationException(ReservationException.RESERVATION_NOT_FOUND, "No existe la reserva " + id));
+    }
+
+    public ReservationPage listReservations(String login, int page, int size) {
+        return listReservationsUseCase.listReservations(login, page, size);
     }
 
     public void handlePhoneRequest(PhoneRequest request) {

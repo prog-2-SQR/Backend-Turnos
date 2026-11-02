@@ -123,6 +123,8 @@ Turnos no guarda el catálogo: en cada consulta pide el profesional y sus horari
 
 Revalida el turno con la disponibilidad vigente, pide el hold a la cátedra y lo confirma. Responde `201` con el proceso en `WAITING_FOR_PHONE` y su `expiresAt`; la cátedra pide el teléfono por Kafka. `GET /api/reservations/{id}` devuelve un proceso propio (uno ajeno da `404`).
 
+`GET /api/reservations?page=0&size=20` lista las reservas propias, en curso y terminadas, de la más nueva a la más vieja: `{"content": [...], "page": 0, "size": 20, "totalElements": 3, "totalPages": 1}`. `size` va de 1 a 100.
+
 - Un usuario tiene como mucho **una reserva en curso**: lo garantiza un índice único parcial de PostgreSQL (`409 RESERVATION_ALREADY_PENDING`).
 - El proceso se guarda antes de llamar a la cátedra y después de cada respuesta. Los rechazos de la cátedra llegan con su mismo code (`409 SLOT_ALREADY_HELD`, `400 INVALID_SLOT`...) y el proceso queda `FAILED` o `EXPIRED`.
 - La cátedra exige nombre y apellido del paciente: salen de la cuenta, o de `patientFirstName` y `patientLastName` en el pedido (`400 PATIENT_NAME_REQUIRED` si faltan).
