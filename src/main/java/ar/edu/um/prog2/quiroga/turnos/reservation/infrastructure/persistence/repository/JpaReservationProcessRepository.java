@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationStatus;
 import ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.persistence.entity.ReservationProcessEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface JpaReservationProcessRepository extends JpaRepository<ReservationProcessEntity, UUID> {
@@ -13,4 +15,6 @@ public interface JpaReservationProcessRepository extends JpaRepository<Reservati
     Optional<ReservationProcessEntity> findFirstByUserIdAndStatusIn(Long userId, Collection<ReservationStatus> statuses);
 
     Optional<ReservationProcessEntity> findByCatedraProcessId(String catedraProcessId);
+
+    Page<ReservationProcessEntity> findByUserId(Long userId, Pageable pageable);
 }

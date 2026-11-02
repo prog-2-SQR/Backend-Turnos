@@ -173,8 +173,27 @@ class ReservationFlowTest {
     }
 
     @Test
+    void eachUserListsOnlyTheirOwnReservations() throws Exception {
+        String juan = registerAndLogIn("juan.perez");
+        String id = JsonPath.read(startReservation(juan, 201), "$.id");
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/reservations").header("Authorization", juan))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(id))
+                .andExpect(jsonPath("$.content[0].status").value("WAITING_FOR_PHONE"))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20));
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/reservations").header("Authorization", registerAndLogIn("ana.gomez")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isEmpty())
+                .andExpect(jsonPath("$.totalElements").value(0));
+    }
+
+    @Test
     void withoutTokenIs401() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/reservations").contentType(MediaType.APPLICATION_JSON).content(RESERVATION))
                 .andExpect(status().isUnauthorized());
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/reservations")).andExpect(status().isUnauthorized());
     }
 }

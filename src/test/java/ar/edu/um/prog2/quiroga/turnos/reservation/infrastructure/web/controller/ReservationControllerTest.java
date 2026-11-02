@@ -6,6 +6,7 @@ import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixt
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.phoneRequested;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.waitingForPhone;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -17,10 +18,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import ar.edu.um.prog2.quiroga.turnos.reservation.application.exception.ReservationException;
 import ar.edu.um.prog2.quiroga.turnos.reservation.application.service.ReservationService;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationPage;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationProcess;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationRequest;
 import ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.web.handler.ReservationExceptionHandler;
@@ -187,5 +190,38 @@ class ReservationControllerTest {
                         .content("{\"phoneNumber\": \"123\"}"))
                 .andExpect(status().is(status))
                 .andExpect(jsonPath("$.code").value(code));
+    }
+
+    @Test
+    void listsTheReservationsOfTheUserOfTheToken() throws Exception {
+        ReservationProcess process = waitingForPhone();
+        when(reservationService.listReservations("juan.perez", 1, 5))
+                .thenReturn(ReservationPage.builder().content(List.of(process)).page(1).size(5).totalElements(6).build());
+
+        mockMvc.perform(get("/api/reservations").param("page", "1").param("size", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(process.getId().toString()))
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.size").value(5))
+                .andExpect(jsonPath("$.totalElements").value(6))
+                .andExpect(jsonPath("$.totalPages").value(2));
+    }
+
+    @Test
+    void theFirstPageIsTheDefault() throws Exception {
+        when(reservationService.listReservations("juan.perez", 0, 20)).thenReturn(ReservationPage.builder().size(20).build());
+
+        mockMvc.perform(get("/api/reservations"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isEmpty());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"-1, 20", "0, 0", "0, 101"})
+    void anInvalidPageIs400(int page, int size) throws Exception {
+        mockMvc.perform(get("/api/reservations").param("page", String.valueOf(page)).param("size", String.valueOf(size)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+        verify(reservationService, never()).listReservations(any(), anyInt(), anyInt());
     }
 }

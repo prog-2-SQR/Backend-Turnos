@@ -8,8 +8,13 @@ import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixt
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import ar.edu.um.prog2.quiroga.turnos.TestcontainersConfiguration;
 import ar.edu.um.prog2.quiroga.turnos.reservation.application.exception.ReservationException;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationPage;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationProcess;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationStatus;
 import ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.persistence.mapper.ReservationProcessMapper;
@@ -99,5 +104,26 @@ class JpaReservationProcessRepositoryAdapterTest {
 
         assertThat(adapter.findPendingReservationProcess(7L)).isPresent();
         assertThat(adapter.findPendingReservationProcess(99L)).isEmpty();
+    }
+
+    // Tres procesos terminados de Juan (uno por minuto) y uno de otro usuario.
+    @Test
+    void listsOnlyTheProcessesOfTheUserNewestFirst() {
+        List<UUID> juans = new ArrayList<>();
+        for (int minute = 0; minute < 3; minute++) {
+            ReservationProcess process = ReservationProcess.request(juan(), mondayAtTwelveThirty(), NOW.plusSeconds(60L * minute));
+            process.fail("SLOT_ALREADY_HELD", NOW);
+            juans.add(adapter.saveReservationProcess(process).getId());
+        }
+        adapter.saveReservationProcess(newRequest(99L));
+
+        ReservationPage first = adapter.findReservationProcessesByUser(42L, 0, 2);
+        ReservationPage second = adapter.findReservationProcessesByUser(42L, 1, 2);
+
+        assertThat(first.getContent()).extracting(ReservationProcess::getId).containsExactly(juans.get(2), juans.get(1));
+        assertThat(second.getContent()).extracting(ReservationProcess::getId).containsExactly(juans.get(0));
+        assertThat(first.getTotalElements()).isEqualTo(3);
+        assertThat(first.totalPages()).isEqualTo(2);
+        assertThat(adapter.findReservationProcessesByUser(7L, 0, 2).getContent()).isEmpty();
     }
 }
