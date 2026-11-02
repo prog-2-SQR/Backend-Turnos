@@ -17,6 +17,7 @@ import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationProces
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationRequest;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.GetReservationUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.HandlePhoneRequestUseCase;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.PublishPhoneSubmissionsUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.StartReservationUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.SubmitPhoneUseCase;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,9 @@ class ReservationServiceTest {
 
     @Mock
     private SubmitPhoneUseCase submitPhoneUseCase;
+
+    @Mock
+    private PublishPhoneSubmissionsUseCase publishPhoneSubmissionsUseCase;
 
     @InjectMocks
     private ReservationService reservationService;
@@ -85,5 +89,12 @@ class ReservationServiceTest {
         when(submitPhoneUseCase.submitPhone("juan.perez", process.getId(), "+5492615551234")).thenReturn(process);
 
         assertThat(reservationService.submitPhone("juan.perez", process.getId(), "+5492615551234")).isSameAs(process);
+    }
+
+    @Test
+    void publishPendingPhoneSubmissionsDelegatesToItsUseCase() {
+        reservationService.publishPendingPhoneSubmissions(10);
+
+        verify(publishPhoneSubmissionsUseCase).publishPendingPhoneSubmissions(10);
     }
 }

@@ -1,5 +1,6 @@
 package ar.edu.um.prog2.quiroga.turnos.config;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.listener.DefaultErrorHandler;
@@ -12,6 +13,7 @@ import org.springframework.util.backoff.FixedBackOff;
  * Spring Boot usa este bean en los listeners que crea.
  */
 @Configuration
+@EnableConfigurationProperties(PhoneOutboxProperties.class)
 public class KafkaConfig {
 
     @Bean
