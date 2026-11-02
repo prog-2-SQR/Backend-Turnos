@@ -234,4 +234,17 @@ class ReservationProcessTest {
         assertThatThrownBy(() -> confirmed.applyResult(result(ReservationResultType.EXPIRED), NOW))
                 .isInstanceOf(IllegalStateException.class);
     }
+
+    @Test
+    void onlyAConfirmedReservationIsCancellableByTheUser() {
+        ReservationProcess process = phoneSubmitted();
+        assertThat(process.isCancellable()).isFalse();
+
+        process.applyResult(result(ReservationResultType.CONFIRMED), NOW);
+        assertThat(process.isCancellable()).isTrue();
+
+        process.cancel(NOW.plusSeconds(60));
+        assertThat(process.getStatus()).isEqualTo(ReservationStatus.CANCELLED);
+        assertThat(process.isCancellable()).isFalse();
+    }
 }

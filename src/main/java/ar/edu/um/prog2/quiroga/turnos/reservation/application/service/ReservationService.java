@@ -8,6 +8,7 @@ import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationPage;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationProcess;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationRequest;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationResult;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.CancelReservationUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.GetReservationUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.HandlePhoneRequestUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.HandleReservationResultUseCase;
@@ -29,6 +30,7 @@ public class ReservationService {
     private final PublishPhoneSubmissionsUseCase publishPhoneSubmissionsUseCase;
     private final HandleReservationResultUseCase handleReservationResultUseCase;
     private final ListReservationsUseCase listReservationsUseCase;
+    private final CancelReservationUseCase cancelReservationUseCase;
 
     public ReservationProcess startReservation(String login, ReservationRequest request) {
         return startReservationUseCase.startReservation(login, request);
@@ -37,6 +39,10 @@ public class ReservationService {
     public ReservationProcess getReservation(String login, UUID id) {
         return getReservationUseCase.getReservation(login, id)
                 .orElseThrow(() -> new ReservationException(ReservationException.RESERVATION_NOT_FOUND, "No existe la reserva " + id));
+    }
+
+    public ReservationProcess cancelReservation(String login, UUID id, String reason) {
+        return cancelReservationUseCase.cancelReservation(login, id, reason);
     }
 
     public ReservationPage listReservations(String login, int page, int size) {

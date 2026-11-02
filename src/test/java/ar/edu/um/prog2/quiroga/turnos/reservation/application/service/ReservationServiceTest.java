@@ -19,6 +19,7 @@ import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationProces
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationRequest;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationResult;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationResultType;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.CancelReservationUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.GetReservationUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.HandlePhoneRequestUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.HandleReservationResultUseCase;
@@ -55,6 +56,9 @@ class ReservationServiceTest {
 
     @Mock
     private ListReservationsUseCase listReservationsUseCase;
+
+    @Mock
+    private CancelReservationUseCase cancelReservationUseCase;
 
     @InjectMocks
     private ReservationService reservationService;
@@ -125,5 +129,13 @@ class ReservationServiceTest {
         when(listReservationsUseCase.listReservations("juan.perez", 0, 20)).thenReturn(page);
 
         assertThat(reservationService.listReservations("juan.perez", 0, 20)).isSameAs(page);
+    }
+
+    @Test
+    void cancelReservationDelegatesToItsUseCase() {
+        ReservationProcess process = requested();
+        when(cancelReservationUseCase.cancelReservation("juan.perez", process.getId(), "motivo")).thenReturn(process);
+
+        assertThat(reservationService.cancelReservation("juan.perez", process.getId(), "motivo")).isSameAs(process);
     }
 }

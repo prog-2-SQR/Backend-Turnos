@@ -114,6 +114,15 @@ public class ReservationProcess {
         phoneRejectionMessage = null;
     }
 
+    /** Solo una reserva confirmada se puede cancelar (enunciado §5 punto 14; anexo §12). */
+    public boolean isCancellable() {
+        return status == ReservationStatus.CONFIRMED;
+    }
+
+    public void cancel(Instant now) {
+        moveTo(ReservationStatus.CANCELLED, now);
+    }
+
     /** El resultado se puede aplicar si lleva a un estado permitido desde el actual (un evento tardío no). */
     public boolean canApply(ReservationResult result) {
         return status.canMoveTo(result.getType().getTargetStatus());

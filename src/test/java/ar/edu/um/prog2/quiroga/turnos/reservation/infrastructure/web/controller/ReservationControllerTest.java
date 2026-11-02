@@ -224,4 +224,42 @@ class ReservationControllerTest {
                 .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
         verify(reservationService, never()).listReservations(any(), anyInt(), anyInt());
     }
+
+    @Test
+    void cancelsAReservationOfTheUserWithTheReason() throws Exception {
+        ReservationProcess process = waitingForPhone();
+        when(reservationService.cancelReservation("juan.perez", process.getId(), "No puedo ir")).thenReturn(process);
+
+        mockMvc.perform(post("/api/reservations/{id}/cancel", process.getId()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reason\": \"No puedo ir\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(process.getId().toString()));
+    }
+
+    @Test
+    void theReasonIsOptional() throws Exception {
+        ReservationProcess process = waitingForPhone();
+        when(reservationService.cancelReservation("juan.perez", process.getId(), null)).thenReturn(process);
+
+        mockMvc.perform(post("/api/reservations/{id}/cancel", process.getId())).andExpect(status().isOk());
+    }
+
+    @Test
+    void aReservationThatIsNotConfirmedIs409() throws Exception {
+        when(reservationService.cancelReservation(any(), any(), any()))
+                .thenThrow(new ReservationException(ReservationException.RESERVATION_NOT_CANCELLABLE, "detalle"));
+
+        mockMvc.perform(post("/api/reservations/{id}/cancel", UUID.randomUUID()))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("RESERVATION_NOT_CANCELLABLE"));
+    }
+
+    @Test
+    void aTooLongReasonIs400() throws Exception {
+        mockMvc.perform(post("/api/reservations/{id}/cancel", UUID.randomUUID()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reason\": \"" + "x".repeat(501) + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+        verify(reservationService, never()).cancelReservation(any(), any(), any());
+    }
 }
