@@ -58,6 +58,11 @@ public class ReservationProcessEntity {
     private String phoneRequestEventId;
     @Column(length = 500)
     private String phoneRequestMessage;
+
+    @Column(length = 500)
+    private String phoneRejectionMessage;
+
+    private Long catedraReservationId;
     @Column(nullable = false)
     private Instant createdAt;
     @Column(nullable = false)

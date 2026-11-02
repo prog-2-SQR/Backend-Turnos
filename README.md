@@ -96,6 +96,8 @@ En cada push y PR, el CI además analiza el código con **[SonarQube Cloud](http
 | `KAFKA_BOOTSTRAP_SERVERS` | `localhost:9092` | Broker de Kafka de la cátedra |
 | `KAFKA_CONSUMER_GROUP_ID` | `alumnos` | Consumer group de la integración; Turnos le agrega `-turnos` |
 | `KAFKA_APPOINTMENT_ACTIONS_TOPIC` | (obligatoria) | Topic de acciones de reserva (`alumnos.turnos.acciones.<groupId>`) |
+| `KAFKA_APPOINTMENT_PHONE_TOPIC` | (obligatoria) | Topic donde se publica el teléfono (`catedra.turnos.telefono.<groupId>`) |
+| `CATEDRA_GROUP_ID` | (obligatoria) | `groupId` de la integración: va en cada evento del teléfono |
 | `TURNOS_TIME_ZONE` | `America/Argentina/Buenos_Aires` | Zona de las horas de atención: define qué turnos de hoy ya empezaron |
 
 Los usuarios se registran con `POST /api/register` e inician sesión con `POST /api/authenticate`, que devuelve `{"id_token": "..."}` (contrato de JHipster). El resto de las APIs requiere `Authorization: Bearer <id_token>`; sin token responden `401`.
@@ -129,6 +131,28 @@ Después la cátedra pide el teléfono por Kafka (`AdditionalInformationRequeste
 
 Estados, reintentos y alternativas en el [ADR 0004](docs/adr/0004-proceso-de-reserva.md).
 
+### Teléfono y resultado
+
+`POST /api/reservations/{id}/phone` responde el pedido de teléfono:
+
+```json
+{"phoneNumber": "+54 9 261 555-1234"}
+```
+
+Valida el teléfono con la regla de la cátedra (`400 INVALID_PHONE_NUMBER`) y que la cátedra lo haya pedido (`409 PHONE_NOT_REQUESTED`). Responde `202` con el proceso en `PHONE_SUBMITTED`. El teléfono se guarda en un **outbox** en la misma transacción, y un proceso programado lo publica cada 2 s en el topic del teléfono (`KAFKA_APPOINTMENT_PHONE_TOPIC`) como `AdditionalInformationSubmitted`. Si Kafka no confirma el envío, se reintenta con el **mismo `eventId`**, hasta 10 veces.
+
+El resultado llega por el topic de acciones y se ve en `GET /api/reservations/{id}`:
+
+| Evento | Estado |
+|---|---|
+| `AppointmentConfirmed` | `CONFIRMED` |
+| `AdditionalInformationRejected` | `WAITING_FOR_PHONE`, con `phoneRejectionMessage`: se puede mandar otro teléfono |
+| `AppointmentProcessExpired` | `EXPIRED` |
+| `AppointmentProcessInvalid` | `INVALID` |
+| `AppointmentCancelled` | `CANCELLED` |
+
+Un evento repetido no tiene efecto y uno tardío no reabre un estado final. Detalle en el [ADR 0005](docs/adr/0005-telefono-con-outbox-y-resultados.md).
+
 ## Stack
 
 | Componente | Versión |
@@ -147,6 +171,7 @@ Estados, reintentos y alternativas en el [ADR 0004](docs/adr/0004-proceso-de-res
 - [ADR 0002: Hash de contraseñas con Argon2id](docs/adr/0002-hash-de-contrasenas-con-argon2id.md)
 - [ADR 0003: Consulta al catálogo en el momento, con token relay](docs/adr/0003-consulta-al-catalogo-con-token-relay.md)
 - [ADR 0004: Proceso de reserva: estados, hold y confirmación](docs/adr/0004-proceso-de-reserva.md)
+- [ADR 0005: Teléfono con outbox y resultados del proceso](docs/adr/0005-telefono-con-outbox-y-resultados.md)
 
 ## Repositorios del proyecto
 

@@ -17,6 +17,10 @@ public class ReservationException extends RuntimeException {
     public static final String RESERVATION_PROCESS_ALREADY_CONFIRMED = "RESERVATION_PROCESS_ALREADY_CONFIRMED";
     public static final String CATEDRA_UNAVAILABLE = "CATEDRA_UNAVAILABLE";
     public static final String CATEDRA_REJECTED = "CATEDRA_REJECTED";
+    /** El proceso no está esperando un teléfono: la cátedra todavía no lo pidió o ya se envió. */
+    public static final String PHONE_NOT_REQUESTED = "PHONE_NOT_REQUESTED";
+    /** El teléfono no cumple la regla de la cátedra (anexo §15.5). */
+    public static final String INVALID_PHONE_NUMBER = "INVALID_PHONE_NUMBER";
     /** Un evento llegó antes de que guardáramos la confirmación del hold: el listener lo reintenta. */
     public static final String CONFIRMATION_IN_FLIGHT = "CONFIRMATION_IN_FLIGHT";
 

@@ -3,6 +3,7 @@ package ar.edu.um.prog2.quiroga.turnos.reservation.application.service;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.mondayAtTwelveThirty;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.phoneRequest;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.requested;
+import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.result;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
@@ -15,9 +16,14 @@ import ar.edu.um.prog2.quiroga.turnos.reservation.application.exception.Reservat
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.PhoneRequest;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationProcess;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationRequest;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationResult;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationResultType;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.GetReservationUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.HandlePhoneRequestUseCase;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.HandleReservationResultUseCase;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.PublishPhoneSubmissionsUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.StartReservationUseCase;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.SubmitPhoneUseCase;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,6 +41,15 @@ class ReservationServiceTest {
 
     @Mock
     private HandlePhoneRequestUseCase handlePhoneRequestUseCase;
+
+    @Mock
+    private SubmitPhoneUseCase submitPhoneUseCase;
+
+    @Mock
+    private PublishPhoneSubmissionsUseCase publishPhoneSubmissionsUseCase;
+
+    @Mock
+    private HandleReservationResultUseCase handleReservationResultUseCase;
 
     @InjectMocks
     private ReservationService reservationService;
@@ -73,5 +88,29 @@ class ReservationServiceTest {
         reservationService.handlePhoneRequest(request);
 
         verify(handlePhoneRequestUseCase).handlePhoneRequest(request);
+    }
+
+    @Test
+    void submitPhoneDelegatesToItsUseCase() {
+        ReservationProcess process = requested();
+        when(submitPhoneUseCase.submitPhone("juan.perez", process.getId(), "+5492615551234")).thenReturn(process);
+
+        assertThat(reservationService.submitPhone("juan.perez", process.getId(), "+5492615551234")).isSameAs(process);
+    }
+
+    @Test
+    void publishPendingPhoneSubmissionsDelegatesToItsUseCase() {
+        reservationService.publishPendingPhoneSubmissions(10);
+
+        verify(publishPhoneSubmissionsUseCase).publishPendingPhoneSubmissions(10);
+    }
+
+    @Test
+    void handleReservationResultDelegatesToItsUseCase() {
+        ReservationResult result = result(ReservationResultType.CONFIRMED);
+
+        reservationService.handleReservationResult(result);
+
+        verify(handleReservationResultUseCase).handleReservationResult(result);
     }
 }

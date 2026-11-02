@@ -32,6 +32,11 @@ spring:
     listener:
       # El offset de cada mensaje se confirma cuando el listener terminó de procesarlo.
       ack-mode: record
+    producer:
+      properties:
+        # Si el broker no responde, send() no se queda bloqueado más de 10 s: el envío cuenta como fallido y el outbox
+        # lo reintenta en la próxima vuelta.
+        max.block.ms: 10000
   mvc:
     problemdetails:
       # Los errores HTTP salen como application/problem+json (RFC 9457), como pide el anexo §13.
@@ -45,6 +50,11 @@ catedra:
   # Topic de acciones de reserva (anexo §15.2): pedidos de teléfono y resultados. Sin valor por defecto: si falta,
   # la app no arranca.
   appointment-actions-topic: ${KAFKA_APPOINTMENT_ACTIONS_TOPIC}
+  # Para publicar el teléfono (anexo §15.5): el groupId de la integración va en cada evento, y el topic es
+  # catedra.turnos.telefono.{groupId}. Sin valor por defecto: si faltan, la app no arranca.
+  phone-outbox:
+    group-id: ${CATEDRA_GROUP_ID:}
+    topic: ${KAFKA_APPOINTMENT_PHONE_TOPIC:}
 
 catalogo:
   # Servicio de catálogo del proyecto (Documentacion/contratos/turnos-catalogo.md): profesionales y horarios.

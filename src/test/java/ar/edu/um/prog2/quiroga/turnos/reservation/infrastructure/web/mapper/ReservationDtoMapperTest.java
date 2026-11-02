@@ -10,6 +10,8 @@ import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixt
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationProcess;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationResult;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationResultType;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationRequest;
 import ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.web.dto.ReservationResponse;
 import ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.web.dto.StartReservationRequest;
@@ -57,6 +59,21 @@ class ReservationDtoMapperTest {
 
         assertThat(response.isPhoneRequested()).isTrue();
         assertThat(response.getPhoneRequestMessage()).isEqualTo("Ingrese un numero de telefono para continuar.");
+    }
+
+    @Test
+    void aRejectedPhoneShowsWhyWhenAskingForAnother() {
+        ReservationProcess process = waitingForPhone();
+        process.receivePhoneRequest(phoneRequest(), NOW);
+        process.submitPhone(NOW);
+        ReservationResult rejected = ReservationResult.builder().type(ReservationResultType.PHONE_REJECTED)
+                .message("El telefono ingresado no es valido.").build();
+        process.applyResult(rejected, NOW);
+
+        ReservationResponse response = mapper.toResponse(process);
+
+        assertThat(response.isPhoneRequested()).isTrue();
+        assertThat(response.getPhoneRejectionMessage()).isEqualTo("El telefono ingresado no es valido.");
     }
 
     @Test

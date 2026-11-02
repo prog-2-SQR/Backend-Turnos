@@ -38,7 +38,7 @@ class JpaReservationProcessRepositoryAdapterTest {
 
     @AfterEach
     void clean() {
-        jdbcTemplate.execute("TRUNCATE reservation_process");
+        jdbcTemplate.execute("TRUNCATE reservation_process CASCADE");
     }
 
     private ReservationProcess newRequest(long userId) {

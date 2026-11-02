@@ -25,6 +25,10 @@ public class ReservationActionMessage {
     private String holdId;
     private String requiredField;
     private String message;
+    /** Id de la reserva en la cátedra (AppointmentConfirmed, AppointmentCancelled). */
+    private Long reservationId;
+    /** Motivo (AppointmentProcessExpired, AppointmentProcessInvalid, AppointmentCancelled). */
+    private String reason;
     private Instant expiresAt;
     private Instant occurredAt;
     private Integer schemaVersion;

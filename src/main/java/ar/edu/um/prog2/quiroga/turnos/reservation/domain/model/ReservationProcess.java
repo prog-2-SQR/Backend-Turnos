@@ -26,6 +26,9 @@ public class ReservationProcess {
     /** Un pedido sin respuesta de la cátedra por más que esto (por ejemplo, la app se cayó en el medio) se da por fallido. */
     static final Duration REQUEST_TIMEOUT = Duration.ofMinutes(5);
     static final String ABANDONED = "ABANDONED";
+    // Largo de las columnas: un texto de la cátedra más largo se corta en lugar de fallar al guardar.
+    static final int MAX_FAILURE_CODE = 60;
+    static final int MAX_MESSAGE = 500;
 
     private UUID id;
     private Long userId;
@@ -40,6 +43,10 @@ public class ReservationProcess {
     private String failureCode;
     private String phoneRequestEventId;
     private String phoneRequestMessage;
+    /** El mensaje del último teléfono rechazado (anexo §15.7), para mostrárselo al usuario. */
+    private String phoneRejectionMessage;
+    /** El id de la reserva en la cátedra, cuando se confirma: sirve para cancelarla (anexo §12). */
+    private Long catedraReservationId;
     private Instant createdAt;
     private Instant updatedAt;
     private Long version;
@@ -96,6 +103,45 @@ public class ReservationProcess {
             expiresAt = request.getExpiresAt();
         }
         updatedAt = now;
+    }
+
+    /** El usuario respondió el pedido de teléfono: el proceso espera el resultado de la cátedra. */
+    public void submitPhone(Instant now) {
+        if (!isPhoneRequested()) {
+            throw new IllegalStateException("El proceso " + id + " no tiene un pedido de teléfono para responder");
+        }
+        moveTo(ReservationStatus.PHONE_SUBMITTED, now);
+        phoneRejectionMessage = null;
+    }
+
+    /** El resultado se puede aplicar si lleva a un estado permitido desde el actual (un evento tardío no). */
+    public boolean canApply(ReservationResult result) {
+        return status.canMoveTo(result.getType().getTargetStatus());
+    }
+
+    /** Aplica un resultado de la cátedra. Antes hay que preguntar canApply: una transición no permitida es un error. */
+    public void applyResult(ReservationResult result, Instant now) {
+        moveTo(result.getType().getTargetStatus(), now);
+        switch (result.getType()) {
+            case CONFIRMED -> catedraReservationId = result.getCatedraReservationId();
+            case PHONE_REJECTED -> rejectPhone(result);
+            case EXPIRED, INVALID -> failureCode = cut(result.getReason(), MAX_FAILURE_CODE);
+            case CANCELLED -> {
+                // Solo cambia el estado.
+            }
+        }
+    }
+
+    // El proceso vuelve a esperar el teléfono, con el mismo pedido de la cátedra: se responde otra vez con un eventId nuevo.
+    private void rejectPhone(ReservationResult result) {
+        phoneRejectionMessage = cut(result.getMessage(), MAX_MESSAGE);
+        if (result.getExpiresAt() != null) {
+            expiresAt = result.getExpiresAt();
+        }
+    }
+
+    private static String cut(String text, int maxLength) {
+        return text == null || text.length() <= maxLength ? text : text.substring(0, maxLength);
     }
 
     /** Todavía no guardamos la confirmación del hold: un evento de la cátedra puede llegar antes que su respuesta. */
