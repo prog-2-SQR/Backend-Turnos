@@ -5,6 +5,7 @@ import java.util.UUID;
 import ar.edu.um.prog2.quiroga.turnos.reservation.application.service.ReservationService;
 import ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.web.dto.ReservationResponse;
 import ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.web.dto.StartReservationRequest;
+import ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.web.dto.SubmitPhoneRequest;
 import ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.web.mapper.ReservationDtoMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,5 +39,13 @@ public class ReservationController {
     @GetMapping("/{id}")
     public ReservationResponse getReservation(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) {
         return reservationDtoMapper.toResponse(reservationService.getReservation(jwt.getSubject(), id));
+    }
+
+    // 202: el teléfono quedó guardado para enviar; el resultado llega después por Kafka y se ve con el GET.
+    @PostMapping("/{id}/phone")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public ReservationResponse submitPhone(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id,
+                                           @Valid @RequestBody SubmitPhoneRequest request) {
+        return reservationDtoMapper.toResponse(reservationService.submitPhone(jwt.getSubject(), id, request.getPhoneNumber()));
     }
 }

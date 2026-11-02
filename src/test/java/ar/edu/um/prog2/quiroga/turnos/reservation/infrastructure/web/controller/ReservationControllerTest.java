@@ -3,6 +3,7 @@ package ar.edu.um.prog2.quiroga.turnos.reservation.infrastructure.web.controller
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.HOLD_EXPIRES_AT;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.NOW;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.phoneRequest;
+import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.phoneRequested;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.waitingForPhone;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -152,5 +153,39 @@ class ReservationControllerTest {
         mockMvc.perform(get("/api/reservations/{id}", id))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("RESERVATION_NOT_FOUND"));
+    }
+
+    @Test
+    void submitsThePhoneOfTheUserOfTheToken() throws Exception {
+        ReservationProcess process = phoneRequested();
+        process.submitPhone(NOW);
+        when(reservationService.submitPhone("juan.perez", process.getId(), "+54 9 261 555-1234")).thenReturn(process);
+
+        mockMvc.perform(post("/api/reservations/{id}/phone", process.getId()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"phoneNumber\": \"+54 9 261 555-1234\"}"))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.status").value("PHONE_SUBMITTED"))
+                .andExpect(jsonPath("$.phoneRequested").value(false));
+    }
+
+    @Test
+    void aPhoneIsRequired() throws Exception {
+        mockMvc.perform(post("/api/reservations/{id}/phone", UUID.randomUUID()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"phoneNumber\": \"  \"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.fieldErrors[?(@.field == 'phoneNumber')]").exists());
+        verify(reservationService, never()).submitPhone(any(), any(), any());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"INVALID_PHONE_NUMBER, 400", "PHONE_NOT_REQUESTED, 409", "RESERVATION_NOT_FOUND, 404"})
+    void phoneErrorsKeepTheirCode(String code, int status) throws Exception {
+        when(reservationService.submitPhone(any(), any(), any())).thenThrow(new ReservationException(code, "detalle"));
+
+        mockMvc.perform(post("/api/reservations/{id}/phone", UUID.randomUUID()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"phoneNumber\": \"123\"}"))
+                .andExpect(status().is(status))
+                .andExpect(jsonPath("$.code").value(code));
     }
 }

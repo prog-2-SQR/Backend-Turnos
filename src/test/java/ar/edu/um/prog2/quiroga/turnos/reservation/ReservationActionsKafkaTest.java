@@ -68,7 +68,7 @@ class ReservationActionsKafkaTest {
 
     @AfterEach
     void clean() {
-        jdbcTemplate.execute("TRUNCATE reservation_process, reservation_processed_events");
+        jdbcTemplate.execute("TRUNCATE reservation_process, reservation_processed_events CASCADE");
     }
 
     @Test

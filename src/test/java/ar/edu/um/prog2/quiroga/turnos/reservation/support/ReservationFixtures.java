@@ -43,6 +43,13 @@ public final class ReservationFixtures {
         return process;
     }
 
+    /** La cátedra ya pidió el teléfono: el usuario lo puede responder. */
+    public static ReservationProcess phoneRequested() {
+        ReservationProcess process = waitingForPhone();
+        process.receivePhoneRequest(phoneRequest(), NOW);
+        return process;
+    }
+
     // Ejemplo del anexo §15.4.
     public static PhoneRequest phoneRequest() {
         return PhoneRequest.builder()

@@ -9,6 +9,7 @@ import ar.edu.um.prog2.quiroga.turnos.reservation.domain.model.ReservationReques
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.GetReservationUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.HandlePhoneRequestUseCase;
 import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.StartReservationUseCase;
+import ar.edu.um.prog2.quiroga.turnos.reservation.domain.ports.in.SubmitPhoneUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ public class ReservationService {
     private final StartReservationUseCase startReservationUseCase;
     private final GetReservationUseCase getReservationUseCase;
     private final HandlePhoneRequestUseCase handlePhoneRequestUseCase;
+    private final SubmitPhoneUseCase submitPhoneUseCase;
 
     public ReservationProcess startReservation(String login, ReservationRequest request) {
         return startReservationUseCase.startReservation(login, request);
@@ -31,5 +33,9 @@ public class ReservationService {
 
     public void handlePhoneRequest(PhoneRequest request) {
         handlePhoneRequestUseCase.handlePhoneRequest(request);
+    }
+
+    public ReservationProcess submitPhone(String login, UUID id, String phoneNumber) {
+        return submitPhoneUseCase.submitPhone(login, id, phoneNumber);
     }
 }

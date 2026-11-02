@@ -124,3 +124,60 @@ databaseChangeLog:
                   type: timestamp with time zone
                   constraints:
                     nullable: false
+  - changeSet:
+      id: create-reservation-phone-outbox
+      author: SantiQR-UM
+      comment: >
+        Outbox de teléfonos (AdditionalInformationSubmitted, anexo §15.5): se guarda en la misma transacción que el cambio
+        del proceso y se publica en Kafka después. El eventId no cambia entre reintentos.
+      changes:
+        - createTable:
+            tableName: reservation_phone_outbox
+            columns:
+              - column:
+                  name: event_id
+                  type: varchar(100)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: reservation_process_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_phone_outbox_reservation_process
+                    references: reservation_process(id)
+              - column:
+                  name: catedra_process_id
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: hold_id
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: request_event_id
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: phone_number
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sent_at
+                  type: timestamp with time zone
+              - column:
+                  name: attempts
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false

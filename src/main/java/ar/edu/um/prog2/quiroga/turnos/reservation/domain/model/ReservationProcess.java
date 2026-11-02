@@ -98,6 +98,14 @@ public class ReservationProcess {
         updatedAt = now;
     }
 
+    /** El usuario respondió el pedido de teléfono: el proceso espera el resultado de la cátedra. */
+    public void submitPhone(Instant now) {
+        if (!isPhoneRequested()) {
+            throw new IllegalStateException("El proceso " + id + " no tiene un pedido de teléfono para responder");
+        }
+        moveTo(ReservationStatus.PHONE_SUBMITTED, now);
+    }
+
     /** Todavía no guardamos la confirmación del hold: un evento de la cátedra puede llegar antes que su respuesta. */
     public boolean isConfirmationInFlight() {
         return status == ReservationStatus.REQUESTED || status == ReservationStatus.HELD;

@@ -7,6 +7,7 @@ import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixt
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.held;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.hold;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.phoneRequest;
+import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.phoneRequested;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.waitingForPhone;
 import static ar.edu.um.prog2.quiroga.turnos.reservation.support.ReservationFixtures.requested;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -140,5 +141,23 @@ class ReservationProcessTest {
     void belongsOnlyToItsUser() {
         assertThat(requested().belongsTo(42L)).isTrue();
         assertThat(requested().belongsTo(7L)).isFalse();
+    }
+
+    @Test
+    void submittingThePhoneWaitsForTheResult() {
+        ReservationProcess process = phoneRequested();
+
+        process.submitPhone(NOW.plusSeconds(30));
+
+        assertThat(process.getStatus()).isEqualTo(ReservationStatus.PHONE_SUBMITTED);
+        assertThat(process.isPhoneRequested()).isFalse();
+        assertThat(process.getUpdatedAt()).isEqualTo(NOW.plusSeconds(30));
+    }
+
+    @Test
+    void thePhoneCannotBeSubmittedBeforeTheCatedraAsksForIt() {
+        ReservationProcess process = waitingForPhone();
+
+        assertThatThrownBy(() -> process.submitPhone(NOW)).isInstanceOf(IllegalStateException.class);
     }
 }
