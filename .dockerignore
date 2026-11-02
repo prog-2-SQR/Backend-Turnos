@@ -1,0 +1,8 @@
+# Lo que no entra al contexto de la imagen. Sobre todo .env: los secretos nunca quedan dentro de la imagen.
+.env
+.git
+.github
+.idea
+target
+docs
+*.md

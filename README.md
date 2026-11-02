@@ -57,6 +57,18 @@ Para detener la base sin perder los datos: `docker compose down` (los datos qued
 
 En Windows, usar `mvnw.cmd` en lugar de `./mvnw`.
 
+### Con Docker
+
+El `Dockerfile` arma la imagen en dos etapas: compila con el JDK 25 y deja solo el jar sobre un JRE 25, con un usuario sin privilegios. Los tests no corren en la imagen (los corre el CI) y el `.env` no se copia: los secretos se pasan al arrancar.
+
+```bash
+# Con la base levantada (docker compose up -d)
+docker build -t turnos .
+docker run --rm --network host --env-file .env turnos
+```
+
+`--network host` (Linux o WSL) deja que el contenedor use la red de la máquina: llega a la base por `localhost` y a la cátedra por ZeroTier, igual que con `./mvnw spring-boot:run`. El compose con los dos servicios juntos va en el repositorio [Documentacion](https://github.com/prog-2-SQR/Documentacion).
+
 ## Tests
 
 ```bash
