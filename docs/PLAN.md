@@ -56,4 +56,8 @@ ar.edu.um.prog2.quiroga.turnos
 ## Recortes y pendientes
 
 - **SSE**: el estado de una reserva no se empuja a la app. La app consulta cada 3 s mientras la reserva está en curso; es el recorte previsto en el plan.
-- **Cátedra**: el topic de acciones no publica eventos, y `GET /api/appointments` con `from`/`to` responde 500. Los flujos de Kafka se prueban con Testcontainers, y la reconciliación consulta sin fechas. Detalle en [Documentacion/integracion/pruebas-con-la-catedra.md](https://github.com/prog-2-SQR/Documentacion/blob/main/integracion/pruebas-con-la-catedra.md).
+- **Cátedra**:
+  - Hasta el 03/11, el topic de acciones no publicaba eventos, y los procesos pasaban a `FAILED` sin aviso. Esto motivó la reconciliación.
+  - Desde el 04/11 publica. El flujo completo quedó probado contra la cátedra: hold, pedido de teléfono por Kafka, teléfono por el outbox, `CONFIRMED`, y cancelación desde la app con el `AppointmentCancelled` posterior ignorado. Ese mismo día llegaron atrasados los vencimientos de reservas viejas, y se aplicaron sin hacer retroceder ningún estado final.
+  - `GET /api/appointments` con `from`/`to` sigue respondiendo 500, así que la reconciliación consulta sin fechas.
+  - Detalle en [Documentacion/integracion/pruebas-con-la-catedra.md](https://github.com/prog-2-SQR/Documentacion/blob/main/integracion/pruebas-con-la-catedra.md).
