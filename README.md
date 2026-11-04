@@ -17,7 +17,11 @@ Gestiona los usuarios finales de la app (registro y login con JWT), calcula la d
 
 ## Estado
 
-Esqueleto con base de datos: proyecto Spring Boot conectado a su propio PostgreSQL, con migraciones Liquibase y health check. Los usuarios y las reservas se incorporan en las próximas issues (ver milestones del repositorio).
+Completo para la entrega: usuarios con JWT, disponibilidad, el proceso de reserva con la cátedra (hold, teléfono por Kafka con outbox y resultados), listado y cancelación de reservas propias, y reconciliación con la cátedra. El SSE quedó recortado: la app consulta el estado de la reserva.
+
+- [SPEC](docs/SPEC.md): qué hace el servicio, su API, los estados del proceso y el modelo de datos.
+- [PLAN](docs/PLAN.md): arquitectura, etapas, decisiones y estrategia de pruebas.
+- [TASKS](docs/TASKS.md): las issues de cada etapa con su PR.
 
 ## Requisitos
 
@@ -67,7 +71,7 @@ docker build -t turnos .
 docker run --rm --network host --env-file .env turnos
 ```
 
-`--network host` (Linux o WSL) deja que el contenedor use la red de la máquina: llega a la base por `localhost` y a la cátedra por ZeroTier, igual que con `./mvnw spring-boot:run`. El compose con los dos servicios juntos va en el repositorio [Documentacion](https://github.com/prog-2-SQR/Documentacion).
+`--network host` (Linux o WSL) deja que el contenedor use la red de la máquina: llega a la base por `localhost` y a la cátedra por ZeroTier, igual que con `./mvnw spring-boot:run`. Para levantar los dos servicios juntos, con sus bases, está el compose del repositorio [Documentacion](https://github.com/prog-2-SQR/Documentacion#levantar-toda-la-solución).
 
 ## Tests
 
@@ -167,12 +171,12 @@ Si se perdió una respuesta, Turnos se reinició o la cátedra no avisó por Kaf
 | Componente | Versión |
 |---|---|
 | Java | 25 |
-| Spring Boot | 4.1.1 |
+| Spring Boot | 4.1.2 |
 | Maven (wrapper) | 3.10.0 |
 | PostgreSQL | 18 |
 | Liquibase | gestionado por Spring Boot |
-| Dependencias | Spring Web MVC, Validation, Spring Data JPA, Spring Security (resource server), RestClient, Lombok, Actuator |
-| Tests | JUnit 5, Mockito, AssertJ, Testcontainers, WireMock, JaCoCo |
+| Dependencias | Spring Web MVC, Validation, Spring Data JPA, Spring Security (resource server), RestClient, Spring Kafka, Bouncy Castle (Argon2id), Lombok, Actuator |
+| Tests | JUnit 5, Mockito, AssertJ, Testcontainers (PostgreSQL y Kafka), WireMock, JaCoCo |
 
 ## Decisiones de arquitectura
 
@@ -182,6 +186,7 @@ Si se perdió una respuesta, Turnos se reinició o la cátedra no avisó por Kaf
 - [ADR 0004: Proceso de reserva: estados, hold y confirmación](docs/adr/0004-proceso-de-reserva.md)
 - [ADR 0005: Teléfono con outbox y resultados del proceso](docs/adr/0005-telefono-con-outbox-y-resultados.md)
 - [ADR 0006: Recuperación de procesos en curso: reconciliación con la cátedra](docs/adr/0006-recuperacion-y-reconciliacion.md)
+- [ADR 0007: Autenticación y autorización](docs/adr/0007-autenticacion-y-autorizacion.md)
 
 ## Repositorios del proyecto
 
